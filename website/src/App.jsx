@@ -51,12 +51,12 @@ function App() {
           </p>
           <div className="cta-group">
             <a 
-              href="https://github.com/ransamie/Church-Intercom-System/archive/refs/heads/master.zip" 
+              href="https://github.com/ransamie/Church-Intercom-System/releases/latest" 
               target="_blank" 
               rel="noreferrer" 
               className="btn-primary"
             >
-              📥 Download System (.zip)
+              📥 Download Desktop App (.exe / .dmg)
             </a>
             <a 
               href="https://github.com/ransamie/Church-Intercom-System#readme" 
