@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Church Intercom System — Desktop Launcher",
   "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ransamie/Church-Intercom-System.git"
+  },
   "scripts": {
     "start": "electron .",
     "build:win": "electron-builder --win",
@@ -13,6 +17,11 @@
   "build": {
     "appId": "com.ransamie.church-intercom",
     "productName": "Church Intercom",
+    "publish": {
+      "provider": "github",
+      "owner": "ransamie",
+      "repo": "Church-Intercom-System"
+    },
     "icon": "assets/logo.png",
     "directories": {
       "output": "dist-installer"

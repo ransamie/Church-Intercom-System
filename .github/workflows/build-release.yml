@@ -26,8 +26,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-          cache-dependency-path: launcher/package-lock.json
 
       - name: Install System Dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
@@ -36,8 +34,9 @@ jobs:
           sudo apt-get install -y libarchive-tools fuse
 
       - name: Install Launcher Dependencies
-        working-directory: ./launcher
-        run: npm ci || npm install
+        run: |
+          cd launcher
+          npm install
 
       - name: Build & Publish Release Binaries
         working-directory: ./launcher
