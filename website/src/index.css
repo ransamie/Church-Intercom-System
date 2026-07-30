@@ -428,6 +428,60 @@ section {
   margin-bottom: 20px;
 }
 
+.logo-upload-group {
+  margin-bottom: 20px;
+}
+
+.logo-drop-box {
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.logo-drop-box:hover {
+  border-color: var(--primary);
+  background: rgba(0, 123, 255, 0.08);
+}
+
+.drop-logo-preview {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--glass-border);
+}
+
+.drop-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+}
+
+.drop-text strong {
+  color: white;
+  font-size: 0.9rem;
+}
+
+.drop-text span {
+  color: var(--text-muted);
+}
+
+.preview-logo-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  object-fit: cover;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
 .theme-buttons {
   display: flex;
   gap: 12px;
