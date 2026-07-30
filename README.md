@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="logo.jpg" alt="Church Intercom Logo" width="200" />
+</div>
+
 # 📖 Church Intercom System: User Manual
 
 **Secure, offline communication for the Media & Technical Team.**

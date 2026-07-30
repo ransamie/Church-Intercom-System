@@ -8,7 +8,7 @@ function App() {
       
       <header>
         <div className="logo">
-          <div className="logo-icon">CI</div>
+          <img src="/logo.jpg" alt="Logo" className="logo-icon-img" />
           Church Intercom
         </div>
         <a href="https://github.com/ransboy/Church-Intercom-System" className="github-btn">GitHub</a>
