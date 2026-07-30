@@ -6,11 +6,54 @@ const https = require('https');
 const express = require('express');
 const { Server } = require('socket.io');
 const QRCode = require('qrcode');
+const selfsigned = require('selfsigned');
 
 let mainWindow;
 let activeServer = null;
 let activeIo = null;
 let currentMode = null;
+let cachedCerts = null;
+
+// Pre-generate / Cache 10-Year Certificates for Instant Server Startup
+function getOrGenerateCerts() {
+  if (cachedCerts) return cachedCerts;
+
+  const certDir = path.join(app.getPath('userData'), 'certs');
+  if (!fs.existsSync(certDir)) {
+    fs.mkdirSync(certDir, { recursive: true });
+  }
+
+  const keyPath = path.join(certDir, 'key.pem');
+  const certPath = path.join(certDir, 'cert.pem');
+
+  let needGen = false;
+  if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
+    needGen = true;
+  } else {
+    try {
+      const certStat = fs.statSync(certPath);
+      // Auto-renew if older than 5 years
+      if ((Date.now() - certStat.mtimeMs) > (5 * 365 * 24 * 60 * 60 * 1000)) {
+        needGen = true;
+      }
+    } catch(e) {
+      needGen = true;
+    }
+  }
+
+  if (needGen) {
+    const attrs = [{ name: 'commonName', value: 'ChurchIntercom' }];
+    const pkey = selfsigned.generate(attrs, { days: 3650 }); // 10 Years
+    fs.writeFileSync(keyPath, pkey.private);
+    fs.writeFileSync(certPath, pkey.cert);
+  }
+
+  cachedCerts = {
+    key: fs.readFileSync(keyPath),
+    cert: fs.readFileSync(certPath)
+  };
+  return cachedCerts;
+}
 
 function getLocalIps() {
   const interfaces = os.networkInterfaces();
@@ -31,12 +74,14 @@ function getLocalIps() {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 900,
-    height: 700,
-    minWidth: 800,
-    minHeight: 600,
-    title: 'Church Intercom Control Panel',
+    width: 960,
+    height: 720,
+    minWidth: 850,
+    minHeight: 650,
+    title: 'Church Intercom Host Control Panel — RanTech',
     icon: path.join(__dirname, 'assets', 'logo.png'),
+    show: false, // Instant show when ready
+    backgroundColor: '#0d0d12',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -46,9 +91,17 @@ function createWindow() {
 
   mainWindow.setMenu(null);
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // Asynchronously pre-generate certs on background thread so server start is instant
+  setTimeout(getOrGenerateCerts, 10);
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   stopServer();
@@ -77,9 +130,8 @@ ipcMain.handle('start-server', async (event, mode) => {
     const serverUrl = `https://${primaryIp}:3000`;
     
     // Generate QR Code
-    const qrCodeUrl = await QRCode.toDataURL(serverUrl);
+    const qrCodeUrl = await QRCode.toDataURL(serverUrl, { margin: 1, width: 220 });
 
-    // Start Node Express/Socket.io Server
     const appDir = path.join(__dirname, '..', mode === 'walkie' ? 'Walkie-Talkie' : 'Realtime-Conference');
     const configPath = path.join(__dirname, '..', 'config.json');
     
@@ -91,53 +143,67 @@ ipcMain.handle('start-server', async (event, mode) => {
     }
 
     const expressApp = express();
-    
-    // Ensure certificates
-    const certPath = path.join(appDir, 'cert.pem');
-    const keyPath = path.join(appDir, 'key.pem');
-    
-    let key, cert;
-    if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
-      key = fs.readFileSync(keyPath);
-      cert = fs.readFileSync(certPath);
-    } else {
-      // Fallback selfsigned
-      const selfsigned = require('selfsigned');
-      const pkey = selfsigned.generate([{ name: 'commonName', value: 'localhost' }], { days: 365 });
-      key = pkey.private;
-      cert = pkey.cert;
-    }
+    const options = getOrGenerateCerts();
 
-    const options = { key, cert };
     activeServer = https.createServer(options, expressApp);
 
     if (mode === 'walkie') {
       activeIo = new Server(activeServer, { maxHttpBufferSize: 1e8 });
-      let authUsers = {};
+      let authenticatedUsers = {};
 
       expressApp.use(express.static(appDir));
       expressApp.get('/', (req, res) => res.sendFile(path.join(appDir, 'index.html')));
       expressApp.get('/config', (req, res) => res.json(appConfig));
       expressApp.get('/manifest.json', (req, res) => res.json({ name: appConfig.appName, start_url: '/', display: 'standalone' }));
 
+      function sendRoster() {
+        const roster = Object.values(authenticatedUsers);
+        if (mainWindow) {
+          mainWindow.webContents.send('roster-update', roster);
+        }
+      }
+
       activeIo.on('connection', (socket) => {
-        socket.on('login', (pass) => {
-          if (pass === appConfig.password) {
-            authUsers[socket.id] = true;
-            socket.emit('login-success');
+        const clientIp = socket.handshake.address.replace('::ffff:', '');
+
+        socket.on('login', (data) => {
+          let password = typeof data === 'string' ? data : data.password;
+          let stationName = typeof data === 'object' && data.stationName ? data.stationName : 'Station Device';
+
+          if (password === appConfig.password) {
+            authenticatedUsers[socket.id] = { id: socket.id, stationName, ip: clientIp, isSpeaking: false };
+            socket.emit('login-success', { stationName });
+            sendRoster();
           } else {
             socket.emit('auth-error', 'Wrong Password');
           }
         });
 
+        socket.on('speaking-start', () => {
+          if (authenticatedUsers[socket.id]) {
+            authenticatedUsers[socket.id].isSpeaking = true;
+            activeIo.emit('speaker-active', { stationName: authenticatedUsers[socket.id].stationName });
+            sendRoster();
+          }
+        });
+
+        socket.on('speaking-stop', () => {
+          if (authenticatedUsers[socket.id]) {
+            authenticatedUsers[socket.id].isSpeaking = false;
+            activeIo.emit('speaker-idle');
+            sendRoster();
+          }
+        });
+
         socket.on('voice', (audioBlob) => {
-          if (authUsers[socket.id]) {
-            socket.broadcast.emit('voice', audioBlob);
+          if (authenticatedUsers[socket.id]) {
+            socket.broadcast.emit('voice', { audioBlob, stationName: authenticatedUsers[socket.id].stationName });
           }
         });
 
         socket.on('disconnect', () => {
-          delete authUsers[socket.id];
+          delete authenticatedUsers[socket.id];
+          sendRoster();
         });
       });
 
@@ -151,9 +217,21 @@ ipcMain.handle('start-server', async (event, mode) => {
       expressApp.get('/config', (req, res) => res.json(appConfig));
       expressApp.get('/manifest.json', (req, res) => res.json({ name: appConfig.appName, start_url: '/', display: 'standalone' }));
 
+      function sendRoster() {
+        const roster = Object.values(users);
+        if (mainWindow) {
+          mainWindow.webContents.send('roster-update', roster);
+        }
+      }
+
       activeIo.on('connection', (socket) => {
-        socket.on('login', (pass) => {
-          if (pass !== appConfig.password) {
+        const clientIp = socket.handshake.address.replace('::ffff:', '');
+
+        socket.on('login', (data) => {
+          let password = typeof data === 'string' ? data : data.password;
+          let stationName = typeof data === 'object' && data.stationName ? data.stationName : 'Station Device';
+
+          if (password !== appConfig.password) {
             socket.emit('auth-error', 'Wrong Password');
             return;
           }
@@ -161,18 +239,30 @@ ipcMain.handle('start-server', async (event, mode) => {
             socket.emit('room-full');
             return;
           }
-          users[socket.id] = socket.id;
-          socket.emit('login-success', users);
+
+          users[socket.id] = { id: socket.id, stationName, ip: clientIp, isSpeaking: false };
+          socket.emit('login-success', { selfId: socket.id, stationName, peers: users });
+          socket.broadcast.emit('user-joined', { id: socket.id, stationName, ip: clientIp });
+          sendRoster();
         });
 
-        socket.on('offer', data => users[socket.id] && socket.to(data.target).emit('offer', { sdp: data.sdp, caller: socket.id }));
-        socket.on('answer', data => users[socket.id] && socket.to(data.target).emit('answer', { sdp: data.sdp, caller: socket.id }));
+        socket.on('offer', data => users[socket.id] && socket.to(data.target).emit('offer', { sdp: data.sdp, caller: socket.id, stationName: users[socket.id].stationName }));
+        socket.on('answer', data => users[socket.id] && socket.to(data.target).emit('answer', { sdp: data.sdp, caller: socket.id, stationName: users[socket.id].stationName }));
         socket.on('candidate', data => users[socket.id] && socket.to(data.target).emit('candidate', { candidate: data.candidate, caller: socket.id }));
+
+        socket.on('speaking-state', (isSpeaking) => {
+          if (users[socket.id]) {
+            users[socket.id].isSpeaking = isSpeaking;
+            activeIo.emit('speaking-state-update', { id: socket.id, stationName: users[socket.id].stationName, isSpeaking });
+            sendRoster();
+          }
+        });
 
         socket.on('disconnect', () => {
           if (users[socket.id]) {
             delete users[socket.id];
             socket.broadcast.emit('user-disconnected', socket.id);
+            sendRoster();
           }
         });
       });

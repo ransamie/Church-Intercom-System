@@ -2,310 +2,498 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Church Intercom</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#1a1a1a" id="metaThemeColor">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Church Intercom - Walkie-Talkie</title>
+    <link rel="manifest" href="manifest.json">
     <style>
         :root {
             --primary-color: #007bff;
-            --secondary-color: #0056b3;
-            --bg-color: #1a1a1a;
+            --background-color: #12131a;
+            --card-bg: rgba(26, 28, 40, 0.95);
             --text-color: #ffffff;
-            --success-color: #2ecc71;
+            --text-muted: #9aa0a6;
+            --border-color: rgba(255, 255, 255, 0.1);
             --danger-color: #ff4444;
-        }
-        /* DARK THEME & LAYOUT */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            text-align: center; 
-            background: var(--bg-color); 
-            color: var(--text-color);
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            --success-color: #2ecc71;
         }
 
-        /* --- LOGIN SCREEN (Overlay) --- */
-        #loginScreen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #121212;
-            z-index: 999;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
 
-        #loginScreen h1 { color: var(--primary-color); margin-bottom: 5px; font-size: 2rem; }
-        #loginScreen p { color: #666; margin-top: 0; margin-bottom: 30px; }
-
-        input[type="password"] {
-            padding: 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            border: 2px solid #333;
-            background: #222;
-            color: white;
+        /* --- LOGIN SCREEN --- */
+        #loginScreen {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 35px 25px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
             text-align: center;
-            width: 70%;
-            max-width: 300px;
-            margin-bottom: 20px;
+            width: 100%;
+            max-width: 380px;
+            backdrop-filter: blur(12px);
+        }
+
+        .app-logo-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            object-fit: cover;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.4);
+            color: #fff;
+            font-size: 1rem;
             outline: none;
             transition: border 0.3s;
         }
-        input[type="password"]:focus { border-color: #007bff; }
+
+        input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .preset-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 5px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover, .preset-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
 
         .unlock-btn {
-            background: var(--primary-color); color: white; border: none;
-            padding: 15px 40px; font-size: 18px; font-weight: bold;
-            border-radius: 50px; cursor: pointer;
-        }
-
-        .error-msg { color: var(--danger-color); margin-bottom: 15px; display: none; }
-
-        /* --- MAIN APP (Hidden initially) --- */
-        #appContainer {
-            display: none; /* Hidden until unlocked */
-            flex-grow: 1;
-            flex-direction: column;
-            padding: 20px;
-        }
-
-        h2 { margin-top: 0; color: #ccc; }
-        #status { font-weight: bold; color: #ff4444; margin-bottom: 20px; }
-
-        /* Centered Talk Button */
-        .btn-wrapper {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #talkBtn {
-            padding: 0;
-            font-size: 22px;
-            font-weight: bold;
-            background-color: var(--primary-color);
+            width: 100%;
+            padding: 15px;
+            border-radius: 14px;
+            border: none;
+            background: var(--primary-color);
             color: white;
-            border: 5px solid var(--secondary-color);
-            border-radius: 50%;
-            width: 240px;
-            height: 240px;
+            font-weight: 700;
+            font-size: 1rem;
             cursor: pointer;
-            box-shadow: 0 0 25px rgba(0, 123, 255, 0.4);
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: none; /* Crucial for mobile */
-            transition: transform 0.1s;
-        }
-        
-        #talkBtn.active {
-            background-color: #d32f2f;
-            border-color: #b71c1c;
-            transform: scale(0.95);
-            box-shadow: 0 0 40px rgba(211, 47, 47, 0.6);
-            animation: pulse 1s infinite;
+            margin-top: 10px;
+            transition: transform 0.2s, background 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
         }
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(211, 47, 47, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+        .unlock-btn:active {
+            transform: scale(0.98);
         }
 
-        /* --- FOOTER --- */
-        .footer {
-            margin-top: auto;
-            padding: 20px;
-            font-size: 0.85rem;
-            color: #555;
-            border-top: 1px solid #222;
+        .ssl-warning-box {
+            margin-top: 20px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
         }
-        .footer a { color: var(--primary-color); text-decoration: none; font-weight: bold; }
-        
-        #installBtn {
+
+        /* --- INTERCOM SCREEN --- */
+        #intercomScreen {
             display: none;
-            margin-top: 15px;
-            background: transparent;
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 10px 20px;
-            border-radius: 20px;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        .status-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px 20px;
+            border-radius: 16px;
+            width: 100%;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .station-tag {
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wake-badge {
+            font-size: 0.75rem;
+            color: var(--success-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(46,204,113,0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(46,204,113,0.3);
+        }
+
+        .speaker-banner {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .speaker-banner.transmitting {
+            background: rgba(255, 68, 68, 0.15);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+            animation: pulse-border 1.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+        }
+
+        .talk-button-wrapper {
+            position: relative;
+            margin: 20px 0 40px;
+        }
+
+        .talk-button {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: 6px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 1px;
             cursor: pointer;
-            font-weight: bold;
+            user-select: none;
+            outline: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 123, 255, 0.4);
+            transition: transform 0.1s, background 0.3s, box-shadow 0.3s;
+        }
+
+        .talk-button.transmitting {
+            background: var(--danger-color);
+            box-shadow: 0 10px 40px rgba(255, 68, 68, 0.6);
+            transform: scale(0.96);
+        }
+
+        .icon-svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .install-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
     </style>
 </head>
 <body>
 
+    <!-- LOGIN SCREEN -->
     <div id="loginScreen">
-        <img src="logo.jpg" alt="App Logo" style="width: 75px; height: 75px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.4);" />
+        <img src="logo.jpg" alt="Logo" class="app-logo-img" />
         <h1 id="appTitle">Church Intercom</h1>
-        <p id="appDesc">Secure Audio Relay System</p>
+        <p class="subtitle" id="appDesc">Walkie-Talkie Mode</p>
         
-        <div id="loginError" class="error-msg">Incorrect Password</div>
-        
-        <input type="password" id="passInput" placeholder="Enter Team Password">
-        <button class="unlock-btn" onclick="attemptLogin()">UNLOCK SYSTEM</button>
+        <div class="form-group">
+            <label>1. Select Your Station:</label>
+            <input type="text" id="stationInput" placeholder="e.g. Cam 1, Sound Desk" />
+            <div class="preset-grid">
+                <button className="preset-btn" onclick="setPreset('Cam 1')">Cam 1</button>
+                <button className="preset-btn" onclick="setPreset('Cam 2')">Cam 2</button>
+                <button className="preset-btn" onclick="setPreset('Sound Desk')">Sound</button>
+                <button className="preset-btn" onclick="setPreset('Director')">Director</button>
+                <button className="preset-btn" onclick="setPreset('Visuals')">Visuals</button>
+                <button className="preset-btn" onclick="setPreset('Usher 1')">Usher</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>2. Enter Team Password:</label>
+            <input type="password" id="passwordInput" placeholder="••••••••" />
+        </div>
+
+        <button class="unlock-btn" onclick="attemptLogin()">CONNECT STATION</button>
+
+        <div class="ssl-warning-box">
+            🔒 <strong>Offline LAN Security:</strong> If your browser shows a "Not Private" alert, tap <em>Advanced → Proceed</em> to connect securely over Wi-Fi.
+        </div>
 
         <div class="footer">
             Developed by <a href="https://github.com/ransamie" target="_blank">Ransamie Technologies (RanTech)</a>
-            <br><button id="installBtn">⬇️ Install App</button>
+            <br>
+            <button id="installBtn" class="install-btn" style="display:none;">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Install App
+            </button>
         </div>
     </div>
 
-    <div id="appContainer">
-        <h2>WiFi Walkie-Talkie</h2>
-        <div id="status">Connecting...</div>
-        
-        <div class="btn-wrapper">
-            <button id="talkBtn">HOLD TO TALK</button>
+    <!-- INTERCOM SCREEN -->
+    <div id="intercomScreen">
+        <div class="status-card">
+            <div class="station-tag">
+                <svg class="icon-svg" style="color:var(--primary-color)" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                <span id="currentStationName">Cam 1</span>
+            </div>
+            <div id="wakeStatus" class="wake-badge">
+                <svg class="icon-svg" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z"/></svg>
+                Screen Active
+            </div>
+        </div>
+
+        <div id="speakerBanner" class="speaker-banner">
+            🟢 Ready (Press & Hold Button Below)
+        </div>
+
+        <div class="talk-button-wrapper">
+            <button id="talkBtn" class="talk-button">
+                <svg id="talkIcon" class="icon-svg" style="width:48px; height:48px;" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                <span id="talkText">HOLD TO TALK</span>
+            </button>
         </div>
 
         <div class="footer">
-            Developed by <a href="https://github.com/ransamie" target="_blank">Ransamie Technologies (RanTech)</a>
+            Built by <a href="https://github.com/ransamie" target="_blank">Ransamie Technologies (RanTech)</a>
         </div>
     </div>
+
+    <!-- SILENT AUDIO LOOP TO PREVENT BACKGROUND SLEEP -->
+    <audio id="silentAudio" loop playsinline src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // PWA Setup
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(console.error);
-        }
-        
-        let deferredPrompt;
-        const installBtn = document.getElementById('installBtn');
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.style.display = 'inline-block';
-        });
-        installBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') installBtn.style.display = 'none';
-                deferredPrompt = null;
-            }
-        });
-
-        // Config Loading
-        fetch('/config').then(r => r.json()).then(config => {
-            document.title = config.appName;
-            document.getElementById('appTitle').innerText = config.appName;
-            if(config.appDescription) document.getElementById('appDesc').innerText = config.appDescription;
-            
-            const root = document.documentElement;
-            if(config.theme) {
-                if(config.theme.primaryColor) root.style.setProperty('--primary-color', config.theme.primaryColor);
-                if(config.theme.secondaryColor) root.style.setProperty('--secondary-color', config.theme.secondaryColor);
-                if(config.theme.backgroundColor) {
-                    root.style.setProperty('--bg-color', config.theme.backgroundColor);
-                    document.getElementById('metaThemeColor').content = config.theme.backgroundColor;
-                }
-                if(config.theme.textColor) root.style.setProperty('--text-color', config.theme.textColor);
-                if(config.theme.successColor) root.style.setProperty('--success-color', config.theme.successColor);
-                if(config.theme.dangerColor) root.style.setProperty('--danger-color', config.theme.dangerColor);
-            }
-        }).catch(console.error);
-
         const socket = io();
-        
-        // UI Elements
-        const loginScreen = document.getElementById('loginScreen');
-        const appContainer = document.getElementById('appContainer');
-        const passInput = document.getElementById('passInput');
-        const loginError = document.getElementById('loginError');
-        const btn = document.getElementById('talkBtn');
-        const statusText = document.getElementById('status');
-
-        // Audio Vars
         let mediaRecorder;
         let audioChunks = [];
+        let wakeLock = null;
 
-        // --- AUTHENTICATION ---
+        // Auto Load Presets
+        const savedStation = localStorage.getItem('stationName') || 'Cam 1';
+        document.getElementById('stationInput').value = savedStation;
+
+        function setPreset(name) {
+            document.getElementById('stationInput').value = name;
+        }
+
+        // Apply Theme Config
+        fetch('/config')
+            .then(res => res.json())
+            .then(config => {
+                if (config.appName) document.getElementById('appTitle').innerText = config.appName;
+                if (config.theme) {
+                    if (config.theme.primaryColor) document.documentElement.style.setProperty('--primary-color', config.theme.primaryColor);
+                    if (config.theme.backgroundColor) document.documentElement.style.setProperty('--background-color', config.theme.backgroundColor);
+                }
+            }).catch(() => {});
+
+        // Screen Wake Lock API
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+                // Play silent audio to keep audio session alive
+                document.getElementById('silentAudio').play().catch(() => {});
+            } catch (err) {
+                console.log('Wake Lock Error:', err);
+            }
+        }
+
         function attemptLogin() {
-            const password = passInput.value;
-            if(password) socket.emit('login', password);
+            const pass = document.getElementById('passwordInput').value;
+            const station = document.getElementById('stationInput').value.trim() || 'Station Device';
+            localStorage.setItem('stationName', station);
+
+            socket.emit('login', { password: pass, stationName: station });
         }
 
-        passInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") attemptLogin();
+        socket.on('login-success', (data) => {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('intercomScreen').style.display = 'flex';
+            document.getElementById('currentStationName').innerText = data.stationName;
+
+            requestWakeLock();
+            setupMicrophone();
         });
 
-        socket.on('auth-error', (msg) => {
-            loginError.style.display = 'block';
-            loginError.innerText = "❌ " + msg;
-            passInput.value = "";
+        socket.on('auth-error', (msg) => alert(msg));
+
+        // Speaker State Updates
+        socket.on('speaker-active', (data) => {
+            const banner = document.getElementById('speakerBanner');
+            banner.className = 'speaker-banner transmitting';
+            banner.innerText = `📢 BROADCASTING: ${data.stationName}`;
         });
 
-        socket.on('login-success', () => {
-            loginScreen.style.display = 'none';
-            appContainer.style.display = 'flex';
-            initializeAudio(); // Only ask for mic AFTER login
+        socket.on('speaker-idle', () => {
+            const banner = document.getElementById('speakerBanner');
+            banner.className = 'speaker-banner';
+            banner.innerText = '🟢 Channel Idle (Press & Hold Button)';
         });
 
-        // --- WALKIE TALKIE LOGIC ---
-        function initializeAudio() {
+        // Microphone & Talk Button Handling
+        function setupMicrophone() {
             navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                statusText.innerText = "Status: Online & Ready";
-                statusText.style.color = "#2ecc71";
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
 
-                mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
 
-                mediaRecorder.addEventListener("dataavailable", event => {
-                    audioChunks.push(event.data);
-                });
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        socket.emit('voice', audioBlob);
+                        socket.emit('speaking-stop');
+                        audioChunks = [];
+                    };
 
-                mediaRecorder.addEventListener("stop", () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
-                    socket.emit('voice', audioBlob);
-                    audioChunks = [];
-                });
-            })
-            .catch(err => {
-                statusText.innerText = "Microphone Error: " + err.message;
-            });
+                    const talkBtn = document.getElementById('talkBtn');
+                    const talkText = document.getElementById('talkText');
+
+                    function startTalk(e) {
+                        e.preventDefault();
+                        if (mediaRecorder.state === "inactive") {
+                            mediaRecorder.start();
+                            socket.emit('speaking-start');
+                            talkBtn.className = 'talk-button transmitting';
+                            talkText.innerText = 'TRANSMITTING';
+                        }
+                    }
+
+                    function stopTalk(e) {
+                        e.preventDefault();
+                        if (mediaRecorder.state === "recording") {
+                            mediaRecorder.stop();
+                            talkBtn.className = 'talk-button';
+                            talkText.innerText = 'HOLD TO TALK';
+                        }
+                    }
+
+                    talkBtn.addEventListener('mousedown', startTalk);
+                    talkBtn.addEventListener('mouseup', stopTalk);
+                    talkBtn.addEventListener('mouseleave', stopTalk);
+
+                    talkBtn.addEventListener('touchstart', startTalk);
+                    talkBtn.addEventListener('touchend', stopTalk);
+                })
+                .catch(err => alert("Microphone Permission Required!"));
         }
 
-        // Button Interactions
-        const startRecording = (e) => {
-            e.preventDefault(); 
-            if (mediaRecorder && mediaRecorder.state === "inactive") {
-                mediaRecorder.start();
-                btn.classList.add('active');
-                btn.innerText = "TRANSMITTING...";
-            }
-        };
-
-        const stopRecording = (e) => {
-            e.preventDefault();
-            if (mediaRecorder && mediaRecorder.state === "recording") {
-                mediaRecorder.stop();
-                btn.classList.remove('active');
-                btn.innerText = "HOLD TO TALK";
-            }
-        };
-
-        btn.addEventListener('mousedown', startRecording);
-        btn.addEventListener('mouseup', stopRecording);
-        btn.addEventListener('touchstart', startRecording);
-        btn.addEventListener('touchend', stopRecording);
-
-        // Receive Audio
-        socket.on('voice', (arrayBuffer) => {
-            const blob = new Blob([arrayBuffer], { 'type' : 'audio/ogg; codecs=opus' });
+        // Receive Audio Message
+        socket.on('voice', (data) => {
+            const blob = new Blob([data.audioBlob], { type: 'audio/webm' });
             const audioUrl = URL.createObjectURL(blob);
             const audio = new Audio(audioUrl);
-            audio.play().catch(e => console.log("Playback error:", e));
+            audio.play().catch(() => {});
         });
 
+        // Service Worker / PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
     </script>
 </body>
 </html>

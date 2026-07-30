@@ -3,6 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const selfsigned = require('selfsigned');
 const app = express();
 const { Server } = require("socket.io");
 
@@ -18,12 +19,41 @@ try {
 const TEAM_PASSWORD = appConfig.password;
 // ---------------------
 
-// FIX: Use process.cwd() for certs so the .exe finds them safely
-const options = {
-  key: fs.readFileSync(path.join(process.cwd(), 'key.pem')),
-  cert: fs.readFileSync(path.join(process.cwd(), 'cert.pem'))
-};
+// Ensure 10-Year Valid Auto-Renewing SSL Certificates
+function ensureCerts() {
+  const keyPath = path.join(__dirname, 'key.pem');
+  const certPath = path.join(__dirname, 'cert.pem');
 
+  let needGen = false;
+  if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
+    needGen = true;
+  } else {
+    try {
+      const certStat = fs.statSync(certPath);
+      // Auto-renew if older than 5 years
+      if ((Date.now() - certStat.mtimeMs) > (5 * 365 * 24 * 60 * 60 * 1000)) {
+        needGen = true;
+      }
+    } catch(e) {
+      needGen = true;
+    }
+  }
+
+  if (needGen) {
+    console.log("Generating 10-Year Auto-Renewing SSL Certificate...");
+    const attrs = [{ name: 'commonName', value: 'ChurchIntercom' }];
+    const pkey = selfsigned.generate(attrs, { days: 3650 }); // 10 Years
+    fs.writeFileSync(keyPath, pkey.private);
+    fs.writeFileSync(certPath, pkey.cert);
+  }
+
+  return {
+    key: fs.readFileSync(keyPath),
+    cert: fs.readFileSync(certPath)
+  };
+}
+
+const options = ensureCerts();
 const server = https.createServer(options, app);
 const io = new Server(server, {
     maxHttpBufferSize: 1e8 // Allow larger audio files (100MB)
@@ -32,7 +62,7 @@ const io = new Server(server, {
 app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/config', (req, res) => {
@@ -49,53 +79,84 @@ app.get('/manifest.json', (req, res) => {
     "theme_color": appConfig.theme.primaryColor || "#007bff",
     "icons": [
       {
-        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzAwN2JmZiIvPjx0ZXh0IHg9IjUwIiB5PSI2MCIgZm9udC1zaXplPSI1MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiPkNJPC90ZXh0Pjwvc3ZnPg==",
+        "src": "logo.jpg",
         "sizes": "192x192",
-        "type": "image/svg+xml"
+        "type": "image/jpeg"
       }
     ]
   });
 });
 
-// Store authenticated users
+// Store authenticated users: socket.id -> { stationName, ip }
 let authenticatedUsers = {};
 
-io.on('connection', (socket) => {
-    console.log('New device connected: ' + socket.id);
+function broadcastRoster() {
+  const roster = Object.values(authenticatedUsers).map(u => ({
+    stationName: u.stationName,
+    ip: u.ip
+  }));
+  io.emit('roster-update', roster);
+}
 
-    // 1. LISTEN FOR PASSWORD
-    socket.on('login', (password) => {
+io.on('connection', (socket) => {
+    const clientIp = socket.handshake.address.replace('::ffff:', '');
+    console.log(`New device connected: ${socket.id} (${clientIp})`);
+
+    // 1. LISTEN FOR LOGIN WITH PASSWORD & STATION NAME
+    socket.on('login', (data) => {
+        let password = typeof data === 'string' ? data : data.password;
+        let stationName = typeof data === 'object' && data.stationName ? data.stationName : 'Station Device';
+
         if (password === TEAM_PASSWORD) {
-            authenticatedUsers[socket.id] = true;
-            socket.emit('login-success');
-            console.log(`Device Authenticated: ${socket.id}`);
+            authenticatedUsers[socket.id] = {
+              stationName: stationName,
+              ip: clientIp
+            };
+            socket.emit('login-success', { stationName: stationName });
+            console.log(`Device Authenticated: ${stationName} (${clientIp})`);
+            broadcastRoster();
         } else {
             socket.emit('auth-error', 'Wrong Password');
         }
     });
 
-    // 2. LISTEN FOR AUDIO (Walkie-Talkie Mode)
+    // 2. LISTEN FOR SPEAKING START / STOP
+    socket.on('speaking-start', () => {
+      const user = authenticatedUsers[socket.id];
+      if (user) {
+        io.emit('speaker-active', { stationName: user.stationName });
+      }
+    });
+
+    socket.on('speaking-stop', () => {
+      io.emit('speaker-idle');
+    });
+
+    // 3. LISTEN FOR AUDIO
     socket.on('voice', (audioBlob) => {
-        if (authenticatedUsers[socket.id]) {
-            socket.broadcast.emit('voice', audioBlob);
+        const user = authenticatedUsers[socket.id];
+        if (user) {
+            socket.broadcast.emit('voice', {
+              audioBlob: audioBlob,
+              stationName: user.stationName
+            });
         }
     });
 
     socket.on('disconnect', () => {
         delete authenticatedUsers[socket.id];
+        broadcastRoster();
+        io.emit('speaker-idle');
     });
 });
 
-// --- THIS WAS MISSING: THE SMART IP FUNCTION ---
 function getLocalIp() {
   const interfaces = os.networkInterfaces();
   const results = [];
 
   for (const name of Object.keys(interfaces)) {
       for (const net of interfaces[name]) {
-          // Skip internal (localhost) and non-IPv4 addresses
           if (net.family === 'IPv4' && !net.internal) {
-              // Prefer 192.168.x.x or 10.x.x.x
               if (net.address.startsWith('192.168.') || net.address.startsWith('10.')) {
                   results.unshift(net.address);
               } else {
@@ -107,7 +168,6 @@ function getLocalIp() {
   return results;
 }
 
-// Start Server
 server.listen(3000, '0.0.0.0', () => {
   const ips = getLocalIp();
   
@@ -118,7 +178,6 @@ server.listen(3000, '0.0.0.0', () => {
   
   if (ips.length > 0) {
       console.log(`\n👉  https://${ips[0]}:3000`);
-      
       if (ips.length > 1) {
           console.log('\n(Or try these if the above fails):');
           ips.slice(1).forEach(ip => {
@@ -130,6 +189,4 @@ server.listen(3000, '0.0.0.0', () => {
   }
 
   console.log('\n===================================================');
-  console.log('Keep this window OPEN to keep the system running.');
-  console.log('Press Ctrl+C to stop.');
 });

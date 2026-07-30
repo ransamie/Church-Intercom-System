@@ -1,10 +1,11 @@
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
-const app = express();
-const { Server } = require("socket.io");
 const path = require('path');
 const os = require('os');
+const selfsigned = require('selfsigned');
+const app = express();
+const { Server } = require("socket.io");
 
 // --- CONFIGURATION ---
 const configPath = path.join(__dirname, '..', 'config.json');
@@ -16,21 +17,49 @@ try {
   appConfig = { password: "media", maxPeers: 6, appName: "Church Intercom System", theme: { primaryColor: "#007bff", backgroundColor: "#1a1a1a" } };
 }
 const TEAM_PASSWORD = appConfig.password;
-const MAX_PEERS = appConfig.maxPeers;
+const MAX_PEERS = appConfig.maxPeers || 6;
 // ---------------------
 
-const options = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem')
-};
+function ensureCerts() {
+  const keyPath = path.join(__dirname, 'key.pem');
+  const certPath = path.join(__dirname, 'cert.pem');
 
+  let needGen = false;
+  if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
+    needGen = true;
+  } else {
+    try {
+      const certStat = fs.statSync(certPath);
+      if ((Date.now() - certStat.mtimeMs) > (5 * 365 * 24 * 60 * 60 * 1000)) {
+        needGen = true;
+      }
+    } catch(e) {
+      needGen = true;
+    }
+  }
+
+  if (needGen) {
+    console.log("Generating 10-Year Auto-Renewing SSL Certificate...");
+    const attrs = [{ name: 'commonName', value: 'ChurchIntercom' }];
+    const pkey = selfsigned.generate(attrs, { days: 3650 }); // 10 Years
+    fs.writeFileSync(keyPath, pkey.private);
+    fs.writeFileSync(certPath, pkey.cert);
+  }
+
+  return {
+    key: fs.readFileSync(keyPath),
+    cert: fs.readFileSync(certPath)
+  };
+}
+
+const options = ensureCerts();
 const server = https.createServer(options, app);
 const io = new Server(server);
 
 app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/config', (req, res) => {
@@ -47,21 +76,29 @@ app.get('/manifest.json', (req, res) => {
     "theme_color": appConfig.theme.primaryColor || "#007bff",
     "icons": [
       {
-        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzAwN2JmZiIvPjx0ZXh0IHg9IjUwIiB5PSI2MCIgZm9udC1zaXplPSI1MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiPkNJPC90ZXh0Pjwvc3ZnPg==",
+        "src": "logo.jpg",
         "sizes": "192x192",
-        "type": "image/svg+xml"
+        "type": "image/jpeg"
       }
     ]
   });
 });
 
-// Store authenticated users
+// Store authenticated users: socket.id -> { id, stationName, ip }
 let users = {};
 
+function broadcastRoster() {
+  io.emit('roster-update', Object.values(users));
+}
+
 io.on('connection', (socket) => {
+    const clientIp = socket.handshake.address.replace('::ffff:', '');
     
     // 1. LOGIN HANDLING
-    socket.on('login', (password) => {
+    socket.on('login', (data) => {
+        let password = typeof data === 'string' ? data : data.password;
+        let stationName = typeof data === 'object' && data.stationName ? data.stationName : 'Station Device';
+
         if (password !== TEAM_PASSWORD) {
             socket.emit('auth-error', 'Wrong Password');
             return;
@@ -73,21 +110,38 @@ io.on('connection', (socket) => {
         }
 
         // Auth Success
-        users[socket.id] = socket.id;
-        socket.emit('login-success', users); // Send list of existing peers
-        console.log(`User Logged In. Total: ${Object.keys(users).length}`);
+        users[socket.id] = {
+          id: socket.id,
+          stationName: stationName,
+          ip: clientIp
+        };
+
+        socket.emit('login-success', {
+          selfId: socket.id,
+          stationName: stationName,
+          peers: users
+        });
+
+        socket.broadcast.emit('user-joined', {
+          id: socket.id,
+          stationName: stationName,
+          ip: clientIp
+        });
+
+        console.log(`User Logged In: ${stationName} (${clientIp}). Total: ${Object.keys(users).length}`);
+        broadcastRoster();
     });
 
-    // 2. SIGNALING (Relaying data between phones)
+    // 2. SIGNALING (Relaying WebRTC SDP/ICE between phones)
     socket.on('offer', (data) => {
         if (users[socket.id]) {
-            socket.to(data.target).emit('offer', { sdp: data.sdp, caller: socket.id });
+            socket.to(data.target).emit('offer', { sdp: data.sdp, caller: socket.id, stationName: users[socket.id].stationName });
         }
     });
 
     socket.on('answer', (data) => {
         if (users[socket.id]) {
-            socket.to(data.target).emit('answer', { sdp: data.sdp, caller: socket.id });
+            socket.to(data.target).emit('answer', { sdp: data.sdp, caller: socket.id, stationName: users[socket.id].stationName });
         }
     });
 
@@ -97,24 +151,31 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('speaking-state', (isSpeaking) => {
+      if (users[socket.id]) {
+        users[socket.id].isSpeaking = isSpeaking;
+        io.emit('speaking-state-update', { id: socket.id, stationName: users[socket.id].stationName, isSpeaking });
+      }
+    });
+
     socket.on('disconnect', () => {
         if (users[socket.id]) {
             delete users[socket.id];
             socket.broadcast.emit('user-disconnected', socket.id);
+            broadcastRoster();
         }
     });
 });
+
 function getLocalIp() {
   const interfaces = os.networkInterfaces();
   const results = [];
 
   for (const name of Object.keys(interfaces)) {
       for (const net of interfaces[name]) {
-          // Skip internal (localhost) and non-IPv4 addresses
           if (net.family === 'IPv4' && !net.internal) {
-              // We prefer addresses that look like standard WiFi/LAN (192.168.x.x or 10.x.x.x)
               if (net.address.startsWith('192.168.') || net.address.startsWith('10.')) {
-                  results.unshift(net.address); // Put preferred IPs at the top
+                  results.unshift(net.address);
               } else {
                   results.push(net.address);
               }
@@ -133,10 +194,7 @@ server.listen(3000, '0.0.0.0', () => {
   console.log('\nShare this link with the media team:');
   
   if (ips.length > 0) {
-      // Print the most likely IP first
       console.log(`\n👉  https://${ips[0]}:3000`);
-      
-      // If there are other IPs (like Hotspots/VMs), list them just in case
       if (ips.length > 1) {
           console.log('\n(Or try these if the above fails):');
           ips.slice(1).forEach(ip => {
@@ -148,6 +206,4 @@ server.listen(3000, '0.0.0.0', () => {
   }
 
   console.log('\n===================================================');
-  console.log('Keep this window OPEN to keep the system running.');
-  console.log('Press Ctrl+C to stop.');
 });

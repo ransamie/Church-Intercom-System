@@ -45,12 +45,12 @@ Open `config.json` in the root folder to configure your system:
 For the person responsible for setting up the server before the service starts.
 
 ### Step 1: Requirements & Network Setup
-* Install [Node.js](https://nodejs.org/).
-* Ensure the Host Laptop is connected to the Church WiFi or a Mobile Hotspot.
-* **Crucial:** Ensure all team members connect their phones to this exact same WiFi network.
+* Install the **Church Intercom Host App** (`Church Intercom Setup 1.0.0.exe`).
+* Connect the Host Laptop to the Church Wi-Fi network.
+* **Sunday Best Practice (Fixed IP):** To keep the exact same URL/QR code every Sunday (so team members just tap their installed PWA home screen app without re-typing IP addresses), set a **DHCP Reservation** in your church router for the host laptop (e.g. `192.168.1.50`).
 
 ### Step 2: Choose Your Mode
-You have two modes available. Choose the folder that fits today's need:
+Launch **Church Intercom** from your Desktop or Start Menu and select your mode:
 
 #### 📁 Mode 1: Walkie-Talkie (Recommended for Stability)
 * **Best for:** Simple instructions ("Camera 1, zoom in").
