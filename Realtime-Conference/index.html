@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Church Intercom</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1a1a1a" id="metaThemeColor">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #0056b3;
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --success-color: #2ecc71;
+            --danger-color: #ff4444;
+        }
+        /* DARK THEME & LAYOUT */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            background: var(--bg-color); 
+            color: var(--text-color);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- LOGIN SCREEN (Overlay) --- */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #121212;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #loginScreen h1 { color: var(--primary-color); margin-bottom: 5px; font-size: 2rem; }
+        #loginScreen p { color: #666; margin-top: 0; margin-bottom: 30px; }
+
+        input[type="password"] {
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            background: #222;
+            color: white;
+            text-align: center;
+            width: 70%;
+            max-width: 300px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        input[type="password"]:focus { border-color: #007bff; }
+
+        .unlock-btn {
+            background: var(--primary-color); color: white; border: none;
+            padding: 15px 40px; font-size: 18px; font-weight: bold;
+            border-radius: 50px; cursor: pointer;
+        }
+
+        .error-msg { color: var(--danger-color); margin-bottom: 15px; display: none; }
+
+        /* --- MAIN APP --- */
+        #appContainer {
+            display: none;
+            flex-grow: 1;
+            flex-direction: column;
+            padding: 20px;
+            align-items: center;
+        }
+
+        h2 { margin-top: 10px; color: #ccc; }
+        #status { font-weight: bold; color: #ff4444; margin-bottom: 40px; }
+
+        /* Control Buttons */
+        .control-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            align-items: center;
+        }
+
+        button.action-btn {
+            padding: 25px;
+            font-size: 20px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            width: 80%;
+            max-width: 350px;
+            font-weight: bold;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        button.action-btn:active { transform: scale(0.96); }
+
+        #joinBtn { background: var(--success-color); color: white; }
+        
+        #muteBtn { 
+            display: none; /* Hidden until joined */
+            background: var(--danger-color); /* Red = Muted initially? No, usually Live */
+            color: white; 
+        }
+        
+        #muteBtn.live { background: var(--success-color); box-shadow: 0 0 20px rgba(46, 204, 113, 0.4); }
+        #muteBtn.muted { background: var(--danger-color); opacity: 0.8; }
+
+        /* --- FOOTER --- */
+        .footer {
+            margin-top: auto;
+            padding: 20px;
+            font-size: 0.85rem;
+            color: #555;
+            border-top: 1px solid #222;
+        }
+        .footer a { color: var(--primary-color); text-decoration: none; font-weight: bold; }
+        
+        #installBtn {
+            display: none;
+            margin-top: 15px;
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* Hidden Audio Container */
+        #audioContainer { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="loginScreen">
+        <h1 id="appTitle">Church Intercom</h1>
+        <p id="appDesc">Real-Time Media Conference</p>
+        
+        <div id="loginError" class="error-msg">Incorrect Password</div>
+        
+        <input type="password" id="passInput" placeholder="Enter Team Password">
+        <button class="unlock-btn" onclick="attemptLogin()">UNLOCK SYSTEM</button>
+
+        <div class="footer">
+            Developed by <a href="https://github.com/ransboy" target="_blank">Ransamie</a>
+            <br><button id="installBtn">⬇️ Install App</button>
+        </div>
+    </div>
+
+    <div id="appContainer">
+        <h2>Live Conference</h2>
+        <div id="status">Authorized ✅</div>
+        
+        <div class="control-wrapper">
+            <button id="joinBtn" class="action-btn" onclick="joinConference()">📞 JOIN AUDIO CHANNEL</button>
+            
+            <button id="muteBtn" class="action-btn live" onclick="toggleMute()">🎙️ MIC IS LIVE (Tap to Mute)</button>
+        </div>
+
+        <div id="audioContainer"></div>
+
+        <div class="footer">
+            Developed by <a href="https://github.com/ransboy" target="_blank">Ransamie</a>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // PWA Setup
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(console.error);
+        }
+        
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'inline-block';
+        });
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') installBtn.style.display = 'none';
+                deferredPrompt = null;
+            }
+        });
+
+        // Config Loading
+        fetch('/config').then(r => r.json()).then(config => {
+            document.title = config.appName;
+            document.getElementById('appTitle').innerText = config.appName;
+            if(config.appDescription) document.getElementById('appDesc').innerText = config.appDescription;
+            
+            const root = document.documentElement;
+            if(config.theme) {
+                if(config.theme.primaryColor) root.style.setProperty('--primary-color', config.theme.primaryColor);
+                if(config.theme.secondaryColor) root.style.setProperty('--secondary-color', config.theme.secondaryColor);
+                if(config.theme.backgroundColor) {
+                    root.style.setProperty('--bg-color', config.theme.backgroundColor);
+                    document.getElementById('metaThemeColor').content = config.theme.backgroundColor;
+                }
+                if(config.theme.textColor) root.style.setProperty('--text-color', config.theme.textColor);
+                if(config.theme.successColor) root.style.setProperty('--success-color', config.theme.successColor);
+                if(config.theme.dangerColor) root.style.setProperty('--danger-color', config.theme.dangerColor);
+            }
+        }).catch(console.error);
+
+        const socket = io();
+        
+        // UI Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const appContainer = document.getElementById('appContainer');
+        const passInput = document.getElementById('passInput');
+        const loginError = document.getElementById('loginError');
+        const status = document.getElementById('status');
+        const joinBtn = document.getElementById('joinBtn');
+        const muteBtn = document.getElementById('muteBtn');
+
+        // WebRTC Vars
+        const peers = {}; 
+        let localStream;
+        let pendingUsers = {};
+        const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+        // --- AUTHENTICATION ---
+        function attemptLogin() {
+            const password = passInput.value;
+            if(password) socket.emit('login', password);
+        }
+
+        passInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") attemptLogin();
+        });
+
+        socket.on('auth-error', (msg) => {
+            loginError.style.display = 'block';
+            loginError.innerText = "❌ " + msg;
+            passInput.value = "";
+        });
+
+        socket.on('room-full', () => {
+            loginError.style.display = 'block';
+            loginError.innerText = "⚠️ CHANNEL IS FULL (Max 6)";
+        });
+
+        socket.on('login-success', (users) => {
+            loginScreen.style.display = 'none';
+            appContainer.style.display = 'flex';
+            pendingUsers = users; // Store list of people to call
+        });
+
+        // --- REAL-TIME AUDIO LOGIC ---
+        async function joinConference() {
+            try {
+                // Get Mic Permission
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
+                    video: false 
+                });
+
+                // UI Update
+                joinBtn.style.display = 'none';
+                muteBtn.style.display = 'block';
+                status.innerText = "Status: 🟢 Connected Live";
+                status.style.color = "#2ecc71";
+
+                // Connect to everyone
+                for (const id in pendingUsers) {
+                    if (id !== socket.id) createPeer(id);
+                }
+
+            } catch(e) { 
+                alert("Microphone Error: " + e.message); 
+            }
+        }
+
+        function toggleMute() {
+            if (!localStream) return;
+            const audioTrack = localStream.getAudioTracks()[0];
+            audioTrack.enabled = !audioTrack.enabled;
+
+            if (audioTrack.enabled) {
+                muteBtn.innerText = "🎙️ MIC IS LIVE (Tap to Mute)";
+                muteBtn.className = "action-btn live";
+            } else {
+                muteBtn.innerText = "🚫 MUTED (Tap to Talk)";
+                muteBtn.className = "action-btn muted";
+            }
+        }
+
+        // --- WEBRTC HANDLERS ---
+        function createPeer(targetId) {
+            const peer = new RTCPeerConnection(config);
+            peers[targetId] = peer;
+            
+            // Add Mic
+            localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+
+            // Handle Incoming Audio
+            peer.ontrack = e => {
+                const audio = document.createElement('audio');
+                audio.srcObject = e.streams[0];
+                audio.autoplay = true;
+                audio.playsInline = true;
+                document.getElementById('audioContainer').appendChild(audio);
+            };
+
+            peer.onicecandidate = e => {
+                if(e.candidate) socket.emit('candidate', { target: targetId, candidate: e.candidate });
+            };
+
+            peer.createOffer().then(sdp => {
+                peer.setLocalDescription(sdp);
+                socket.emit('offer', { target: targetId, sdp: sdp });
+            });
+        }
+
+        // Incoming Call
+        socket.on('offer', async (data) => {
+            if(!localStream) return; // Only answer if we joined
+            
+            const peer = new RTCPeerConnection(config);
+            peers[data.caller] = peer;
+            localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+
+            peer.ontrack = e => {
+                const audio = document.createElement('audio');
+                audio.srcObject = e.streams[0];
+                audio.autoplay = true;
+                audio.playsInline = true;
+                document.getElementById('audioContainer').appendChild(audio);
+            };
+
+            peer.onicecandidate = e => {
+                if(e.candidate) socket.emit('candidate', { target: data.caller, candidate: e.candidate });
+            };
+
+            await peer.setRemoteDescription(data.sdp);
+            const answer = await peer.createAnswer();
+            await peer.setLocalDescription(answer);
+            socket.emit('answer', { target: data.caller, sdp: answer });
+        });
+
+        socket.on('answer', (data) => {
+            peers[data.caller].setRemoteDescription(data.sdp);
+        });
+
+        socket.on('candidate', (data) => {
+            peers[data.caller].addIceCandidate(new RTCIceCandidate(data.candidate));
+        });
+
+        socket.on('user-disconnected', id => {
+            if(peers[id]) {
+                peers[id].close();
+                delete peers[id];
+            }
+        });
+
+    </script>
+</body>
+</html>

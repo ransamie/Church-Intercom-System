@@ -1,0 +1,14 @@
+{
+  "appName": "Church Intercom System",
+  "appDescription": "Secure audio relay and communication system for media teams.",
+  "password": "media",
+  "maxPeers": 6,
+  "theme": {
+    "primaryColor": "#007bff",
+    "secondaryColor": "#0056b3",
+    "backgroundColor": "#1a1a1a",
+    "textColor": "#ffffff",
+    "successColor": "#2ecc71",
+    "dangerColor": "#ff4444"
+  }
+}

@@ -1,0 +1,14 @@
+# Ignore the heavy dependencies folder
+node_modules/
+
+# Ignore local secrets
+key.pem
+cert.pem
+
+# Ignore the portable engine (users will install their own)
+node.exe
+*.exe
+
+# Ignore system files
+.DS_Store
+Thumbs.db
