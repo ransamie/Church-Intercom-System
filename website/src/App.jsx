@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './index.css';
 
 function App() {
@@ -7,17 +7,19 @@ function App() {
   const [isMuted, setIsMuted] = useState(true);
   const [customName, setCustomName] = useState("Refiner's House Revival Outreach");
   const [customLogo, setCustomLogo] = useState('/logo.jpg');
-  const [selectedTheme, setSelectedTheme] = useState('blue');
   const [expandedVersion, setExpandedVersion] = useState(null);
+  const [releases, setReleases] = useState([]);
 
-  const themes = {
-    blue: { primary: '#007bff', secondary: '#0056b3', bg: '#0d0d12' },
-    emerald: { primary: '#10b981', secondary: '#059669', bg: '#062016' },
-    purple: { primary: '#8b5cf6', secondary: '#6d28d9', bg: '#130c25' },
-    amber: { primary: '#f59e0b', secondary: '#d97706', bg: '#1f1504' }
-  };
+  useEffect(() => {
+    fetch('https://api.github.com/repos/ransamie/Church-Intercom-System/releases')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setReleases(data);
+      })
+      .catch(err => console.error("Failed to fetch releases:", err));
+  }, []);
 
-  const currentTheme = themes[selectedTheme];
+  const currentTheme = { primary: '#007bff', secondary: '#0056b3', bg: '#0d0d12' };
 
   const handleLogoFile = (file) => {
     if (file && file.type.startsWith('image/')) {
@@ -243,22 +245,7 @@ function App() {
                   />
                 </div>
               </div>
-
-              <div className="theme-picker">
-                <label>Select Accent Theme:</label>
-                <div className="theme-buttons">
-                  {Object.keys(themes).map((t) => (
-                    <button 
-                      key={t}
-                      className={`theme-swatch ${selectedTheme === t ? 'active' : ''}`}
-                      style={{ background: themes[t].primary }}
-                      onClick={() => setSelectedTheme(t)}
-                    />
-                  ))}
-                </div>
               </div>
-            </div>
-
             <div 
               className="preview-card"
               style={{ 
@@ -336,11 +323,13 @@ function App() {
             <div className="release-top-bar">
               <div className="release-tag-group">
                 <span className="latest-badge">LATEST</span>
-                <span className="version-number">v1.0.0</span>
-                <span className="release-date">Released 30 July 2026</span>
+                <span className="version-number">{releases.length > 0 ? releases[0].tag_name : 'v1.0.0'}</span>
+                <span className="release-date">
+                  {releases.length > 0 ? new Date(releases[0].published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Loading...'}
+                </span>
               </div>
               <a 
-                href="https://github.com/ransamie/Church-Intercom-System/releases" 
+                href="https://github.com/ransamie/Church-Intercom-System/releases/latest" 
                 target="_blank" 
                 rel="noreferrer" 
                 className="github-release-link"
@@ -357,7 +346,7 @@ function App() {
             <div className="platforms-grid">
               {/* WINDOWS */}
               <a 
-                href="https://github.com/ransamie/Church-Intercom-System/releases/download/v1.0.0/Church-Intercom-Setup-1.0.0.exe" 
+                href={releases.length > 0 ? (releases[0].assets.find(a => a.name.endsWith('.exe'))?.browser_download_url || '#') : "https://github.com/ransamie/Church-Intercom-System/releases/latest"} 
                 className="platform-card"
                 download
               >
@@ -369,7 +358,7 @@ function App() {
                 <div className="platform-info">
                   <div className="platform-name">Windows</div>
                   <div className="platform-format">.exe Installer</div>
-                  <div className="platform-size">154 MB</div>
+                  <div className="platform-size">{releases.length > 0 ? Math.round((releases[0].assets.find(a => a.name.endsWith('.exe'))?.size || 0) / 1024 / 1024) + ' MB' : '...'}</div>
                 </div>
                 <div className="download-icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -380,7 +369,7 @@ function App() {
 
               {/* MACOS */}
               <a 
-                href="https://github.com/ransamie/Church-Intercom-System/releases/download/v1.0.0/Church-Intercom-1.0.0-arm64.dmg" 
+                href={releases.length > 0 ? (releases[0].assets.find(a => a.name.endsWith('.dmg'))?.browser_download_url || '#') : "https://github.com/ransamie/Church-Intercom-System/releases/latest"} 
                 className="platform-card"
                 download
               >
@@ -391,8 +380,8 @@ function App() {
                 </div>
                 <div className="platform-info">
                   <div className="platform-name">macOS</div>
-                  <div className="platform-format">.dmg (Apple Silicon / Intel)</div>
-                  <div className="platform-size">156 MB</div>
+                  <div className="platform-format">.dmg (Apple Silicon/Intel)</div>
+                  <div className="platform-size">{releases.length > 0 ? Math.round((releases[0].assets.find(a => a.name.endsWith('.dmg'))?.size || 0) / 1024 / 1024) + ' MB' : '...'}</div>
                 </div>
                 <div className="download-icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -403,19 +392,19 @@ function App() {
 
               {/* LINUX */}
               <a 
-                href="https://github.com/ransamie/Church-Intercom-System/releases/download/v1.0.0/Church-Intercom-1.0.0.AppImage" 
+                href={releases.length > 0 ? (releases[0].assets.find(a => a.name.endsWith('.AppImage'))?.browser_download_url || '#') : "https://github.com/ransamie/Church-Intercom-System/releases/latest"} 
                 className="platform-card"
                 download
               >
                 <div className="platform-icon linux">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12.002 0c-2.316 0-4.402 1.341-5.467 3.504l-1.082 2.197c-.305.618-.461 1.303-.461 1.996v2.303h14.02v-2.303c0-.693-.156-1.378-.461-1.996l-1.082-2.197c-1.065-2.163-3.151-3.504-5.467-3.504zm-4.01 12c-1.105 0-2 .895-2 2v6c0 2.209 1.791 4 4 4h4.02c2.209 0 4-1.791 4-4v-6c0-1.105-.895-2-2-2h-8.02z"/>
+                  <svg width="28" height="28" viewBox="0 0 448 512" fill="currentColor">
+                    <path d="M220.8 123.3c1 .5 1.8 1.7 3 1.7 1.1 0 2.8-.4 2.9-1.5.2-1.4-1.9-2.3-3.2-2.9-1.7-.7-3.9-1-5.5-.1-.4.2-.8.7-.6 1.1.3 1.3 2.3 1.1 3.4 1.7zm-21.9 1.7c1.2 0 2-1.2 3-1.7 1.1-.6 3.1-.4 3.5-1.7.2-.4-.2-.9-.6-1.1-1.6-.9-3.8-.6-5.5.1-1.3.6-3.4 1.5-3.2 2.9.1 1 1.8 1.5 2.8 1.5zm70.6-38.3c1.9 4.3 3.4 9.1 4.3 13.9 1 5.3 1.3 10.8 1 16.2-.2 3.8-1 7.5-2.2 11.2-1.3 3.8-3.1 7.4-5.3 10.7-3.9 5.8-8.8 11.1-14.7 15.3-6.6 4.7-14.1 8.3-22 10.8-8 2.6-16.3 4.2-24.6 4.8-7.9.6-15.9.3-23.7-1-7.8-1.3-15.3-3.6-22.3-6.7-7-3.1-13.6-7.1-19.4-12-5.7-4.9-10.7-10.7-14.6-17.1-3.6-5.9-6.3-12.2-7.9-18.8-1.5-6.3-2-12.7-1.5-19.1.5-6.3 1.9-12.5 4.3-18.4 2.4-5.7 5.7-11.1 9.8-15.9 4-4.7 8.8-8.9 14-12.4 5.4-3.6 11.2-6.5 17.3-8.6 6.1-2.1 12.5-3.5 19-4.1 6.5-.5 13 .1 19.3 1.4 6.2 1.2 12.2 3.3 17.7 6.1 5.4 2.7 10.4 6.2 14.7 10.3 4.3 4 8.1 8.5 11.1 13.6zm-86.4 89.2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm57.2 0c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm25.9-46.7c-2.4-1.1-5.1-1.6-7.8-1.6-2.9 0-5.7.7-8.3 2-2.5 1.3-4.7 3.1-6.4 5.3-1.6 2.1-2.8 4.6-3.4 7.2-.6 2.7-.7 5.5-.3 8.2.4 2.7 1.3 5.3 2.8 7.6 1.4 2.2 3.3 4.1 5.4 5.6 2.3 1.5 4.8 2.6 7.5 3.1 2.7.5 5.5.6 8.2.1 2.8-.5 5.5-1.5 7.9-3 2.4-1.6 4.4-3.6 5.9-6 1.5-2.4 2.5-5 3.1-7.8.6-2.8.6-5.7 0-8.5-.6-2.9-1.7-5.6-3.4-8-1.6-2.4-3.7-4.4-6.1-5.9-2.5-1.5-5.3-2.6-8.2-3-2.8-.5-5.7-.7-8.3-.3-2.7.5-5.2 1.5-7.5 3.1-2.2 1.5-4.1 3.4-5.5 5.6-1.5 2.3-2.4 4.9-2.8 7.6-.4 2.7-.3 5.5.3 8.2.6 2.6 1.8 5.1 3.4 7.2 1.7 2.2 3.9 4 6.4 5.3 2.6 1.3 5.4 2 8.3 2 2.7 0 5.4-.5 7.8-1.6zm-59 86.6c1.3-1.8 3.5-2.3 5.3-1 1.8 1.3 2.3 3.5 1 5.3-1.3 1.8-3.5 2.3-5.3 1-1.8-1.3-2.3-3.5-1-5.3zm93.7 101.4c1 1.7-.2 3.5-2 3.5-1.8 0-3.3-1.8-2.3-3.5 1-1.7 3.3-1.7 4.3 0zm-82.9 0c1-1.7 3.3-1.7 4.3 0 1 1.7-.5 3.5-2.3 3.5-1.8 0-3-1.8-2-3.5zM128 360c-26.5 0-48 21.5-48 48s21.5 48 48 48 48-21.5 48-48-21.5-48-48-48zm192 0c-26.5 0-48 21.5-48 48s21.5 48 48 48 48-21.5 48-48-21.5-48-48-48z"/>
                   </svg>
                 </div>
                 <div className="platform-info">
                   <div className="platform-name">Linux</div>
                   <div className="platform-format">.AppImage</div>
-                  <div className="platform-size">142 MB</div>
+                  <div className="platform-size">{releases.length > 0 ? Math.round((releases[0].assets.find(a => a.name.endsWith('.AppImage'))?.size || 0) / 1024 / 1024) + ' MB' : '...'}</div>
                 </div>
                 <div className="download-icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -423,64 +412,30 @@ function App() {
                   </svg>
                 </div>
               </a>
-
-              {/* MOBILE PWA */}
-              <a 
-                href="#features" 
-                className="platform-card mobile"
-                onClick={(e) => { e.preventDefault(); scrollToSection('features'); }}
-              >
-                <div className="platform-icon mobile">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/>
-                  </svg>
-                </div>
-                <div className="platform-info">
-                  <div className="platform-name">Mobile PWA</div>
-                  <div className="platform-format">iOS / Android Browser</div>
-                  <div className="platform-size">One-Tap Install</div>
-                </div>
-                <div className="download-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-                  </svg>
-                </div>
-              </a>
-            </div>
-
-            {/* SECURITY NOTICES */}
-            <div className="security-notices">
-              <div className="notice-item">
-                <span className="notice-icon">⚠️</span>
-                <span><strong>Windows users:</strong> You may see a SmartScreen prompt — click <em>More info → Run anyway</em>. The app is safe; it is unsigned pending a code signing certificate.</span>
-              </div>
-              <div className="notice-item">
-                <span className="notice-icon">🍎</span>
-                <span><strong>macOS users:</strong> Right-click the <code>.dmg</code> file and select <em>Open</em> on first launch.</span>
-              </div>
             </div>
           </div>
 
           {/* PREVIOUS VERSIONS ACCORDION */}
-          <div className="previous-versions-card">
-            <h3 className="previous-versions-title">PREVIOUS VERSIONS</h3>
-            
-            <div className="version-row" onClick={() => setExpandedVersion(expandedVersion === 'v1.0.1' ? null : 'v1.0.1')}>
-              <div className="version-info">
-                <strong>v1.0.1</strong>
-                <span className="version-date">30 Jul 2026</span>
-              </div>
-              <span className="chevron">{expandedVersion === 'v1.0.1' ? '▲' : '▼'}</span>
+          {releases.length > 1 && (
+            <div className="previous-versions-card">
+              <h3 className="previous-versions-title">PREVIOUS VERSIONS</h3>
+              {releases.slice(1).map(release => (
+                <div 
+                  key={release.id} 
+                  className="version-row" 
+                  onClick={() => window.open(release.html_url, '_blank')}
+                >
+                  <div className="version-info">
+                    <strong>{release.tag_name}</strong>
+                    <span className="version-date">
+                      {new Date(release.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <span className="chevron">↗</span>
+                </div>
+              ))}
             </div>
-
-            <div className="version-row" onClick={() => setExpandedVersion(expandedVersion === 'v1.0.0' ? null : 'v1.0.0')}>
-              <div className="version-info">
-                <strong>v1.0.0</strong>
-                <span className="version-date">30 Jul 2026</span>
-              </div>
-              <span className="chevron">{expandedVersion === 'v1.0.0' ? '▲' : '▼'}</span>
-            </div>
-          </div>
+          )}
         </section>
       </main>
 

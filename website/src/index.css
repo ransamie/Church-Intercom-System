@@ -77,24 +77,49 @@ header {
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
-.github-btn {
-  display: inline-flex;
+.header-nav {
+  display: flex;
+  gap: 16px;
   align-items: center;
-  gap: 8px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 25px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
 }
 
-.github-btn:hover {
-  background: white;
-  color: black;
+.nav-link-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.nav-link-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-download-btn {
+  background: var(--primary);
+  border: none;
+  color: white;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.nav-download-btn:hover {
+  background: var(--secondary);
   transform: translateY(-2px);
 }
 
