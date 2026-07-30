@@ -6,116 +6,65 @@
 
 **Secure, offline communication for media & technical teams by Ransamie Technologies (RanTech).**
 
-The Church Intercom System provides a fast, local network-based communication platform that runs on your church's Wi-Fi. It operates completely offline, ensuring security, low latency, and ease of use. It is highly customizable and works across all platforms (Windows, Mac, Linux, Android, iOS).
+The Church Intercom System provides a fast, zero-latency local network communication platform running on your church's Wi-Fi. It operates completely offline, ensuring security, low latency, and ease of use across all platforms (Windows, Mac, Linux, Android, iOS).
 
 ---
 
-## ⚙️ Customization
+## ⚙️ Graphical Control Panel & Zero Configuration
 
-The system is highly customizable without needing to change any code. 
+No code editing or JSON configuration required! Everything is managed directly from the **Church Intercom Desktop Control Panel**:
 
-Open `config.json` in the root folder to configure your system:
-
-```json
-{
-  "appName": "Church Intercom System",
-  "appDescription": "Secure audio relay and communication system for media teams.",
-  "password": "media",
-  "maxPeers": 6,
-  "theme": {
-    "primaryColor": "#007bff",
-    "secondaryColor": "#0056b3",
-    "backgroundColor": "#1a1a1a",
-    "textColor": "#ffffff",
-    "successColor": "#2ecc71",
-    "dangerColor": "#ff4444"
-  }
-}
-```
-
-* **`appName`**: Changes the title displayed on the intercom screen.
-* **`password`**: Set the team password required to connect.
-* **`maxPeers`**: (Realtime Mode Only) Sets the maximum number of people in the call.
-* **`theme`**: Change colors to match your church's branding.
+* **One-Click Server Launch:** Start Walkie-Talkie or Realtime Conference mode with a single click.
+* **Station Naming:** Team members select station labels (`Cam 1`, `Sound Desk`, `Director`, `Usher`) directly on their mobile login screen.
+* **Live Roster Table:** Monitor connected operators, IP addresses, and audio status live on your host dashboard.
+* **Auto-Renewing SSL:** Self-signed certificates auto-generate for 10 years without annual maintenance.
 
 ---
 
 ## 🖥️ PART 1: OPERATOR GUIDE (Host Laptop)
 
-For the person responsible for setting up the server before the service starts.
+For the person responsible for running the intercom system during service.
 
-### Step 1: Requirements & Network Setup
-* Install the **Church Intercom Host App** (`Church Intercom Setup 1.0.0.exe`).
-* Connect the Host Laptop to the Church Wi-Fi network.
-* **Sunday Best Practice (Fixed IP):** To keep the exact same URL/QR code every Sunday (so team members just tap their installed PWA home screen app without re-typing IP addresses), set a **DHCP Reservation** in your church router for the host laptop (e.g. `192.168.1.50`).
+### Step 1: Launch Host App
+1. Install and open the **Church Intercom Host App** (`Church Intercom Setup 1.0.0.exe`).
+2. Connect your Host Laptop to the Church Wi-Fi network.
+3. **Sunday Best Practice (Fixed IP):** Configure a **DHCP Reservation** in your router for the host laptop (e.g., `192.168.1.50`). This keeps the exact same IP address and QR code every Sunday so mobile team members can open their PWA home screen shortcut without re-typing IP addresses.
 
-### Step 2: Choose Your Mode
-Launch **Church Intercom** from your Desktop or Start Menu and select your mode:
+### Step 2: Select Communication Mode
+Click your desired mode inside the desktop application:
 
-#### 📁 Mode 1: Walkie-Talkie (Recommended for Stability)
-* **Best for:** Simple instructions ("Camera 1, zoom in").
-* **Pros:** Very stable, supports many users, uses very little battery.
-* **Cons:** Only one person can talk at a time.
+#### 📻 Mode 1: Walkie-Talkie (Push-to-Talk)
+* **Best for:** Clear, structured directions ("Cam 1, prepare wide shot").
+* **Pros:** Maximum stability, supports unlimited team members, ultra-low battery consumption.
+* **Features:** Live speaker display broadcasts station names (`📢 BROADCASTING: Cam 1`) to all connected devices.
 
-#### 📁 Mode 2: Realtime System (Recommended for Conversation)
-* **Best for:** Active coordination where everyone talks at once.
-* **Pros:** Full conversation (like a phone call), hands-free.
-* **Cons:** Maximum users controlled by `maxPeers`. Requires a strong WiFi connection.
-
-### Step 3: Install Dependencies
-Open a terminal inside the mode folder you selected and run:
-```bash
-npm install
-```
-
-### Step 4: Launch the System
-* **On Windows:** Double-click `START_SERVER.bat` inside your chosen folder.
-* **On Mac / Linux:** Open terminal in the folder and run `bash start.sh` or `npm start`.
-
-A window will open and display a secure link (e.g., `https://192.168.x.x:3000`). Share this link with the team.
+#### 🎧 Mode 2: Realtime Conference (Full-Duplex)
+* **Best for:** Active, hands-free conversation between lead director, sound, and cameras.
+* **Pros:** Simultaneous multi-way conversation (like a phone call).
+* **Features:** Live peer roster grid showing active speakers and muted statuses in real-time.
 
 ---
 
 ## 📱 PART 2: TEAM MEMBER GUIDE
 
-For Ushers, Camera Operators, and Sound Technicians.
+For Ushers, Camera Operators, Sound Engineers, and Visual Operators.
 
-### 🚀 Getting Connected (Everyone)
-
-1. **Connect to WiFi:** Make sure you are on the specific Church Media WiFi.
-2. **Open Browser:** Use Chrome (Android) or Safari (iPhone).
-3. **Type the Link:** Enter the numbers displayed on the Host Laptop screen exactly.
-
-> **⚠️ The Security Warning:**
-> You will see a warning ("Connection not private"). This is normal because it runs offline.
-> * **Android:** Click `Advanced -> Proceed (unsafe)`.
-> * **iPhone:** Click `Show Details -> visit this website`.
-
-4. **Login:** Enter the Team Password.
-5. **Install as Mobile App (Optional):** Once connected, click the **"⬇️ Install App"** button at the bottom of the screen. This will add the intercom to your phone's home screen as a native application for quick access!
-
-### 🟢 IF USING "WALKIE-TALKIE" MODE
-* **To Speak:** Press and HOLD the big button.
-* **Wait:** Wait 1 second after pressing before you speak.
-* **Talk:** Speak clearly. (Button turns Red/Transmitting).
-* **To Listen:** Release the button. Your message sends instantly.
-
-### 🔵 IF USING "REALTIME SYSTEM" MODE
-* **Join:** Click the green "JOIN AUDIO CHANNEL" button.
-* **Permissions:** Click "Allow" for the microphone.
-* **Muting Rules:** Please keep your mic MUTED (Red) unless you are speaking to reduce background noise. Tap to Mute/Unmute.
+### 🚀 Connecting to the System
+1. **Connect to Wi-Fi:** Ensure your smartphone is connected to the Church Media Wi-Fi.
+2. **Scan QR Code or Open Link:** Scan the QR code displayed on the Host Laptop screen or enter the address (e.g. `https://192.168.1.50:3000`).
+3. **Bypass Local Security Warning:**
+   * **Android:** Tap *Advanced → Proceed to 192.168.x.x (unsafe)*.
+   * **iPhone:** Tap *Show Details → Visit this website*.
+4. **Choose Your Station:** Select your station position (`Cam 1`, `Cam 2`, `Sound Desk`, `Director`, `Visuals`, `Usher`) or enter a custom label, then log in.
+5. **Install PWA App (One-Tap):** Tap **Install App** or *Add to Home Screen* in your mobile browser to save Church Intercom as a native app on your phone.
 
 ---
 
 ## ❓ TROUBLESHOOTING
 
-1. **"I can't hear anything!"**
-   * Check Volume: Ensure "Media Volume" is up.
-   * iPhone: Turn off the Silent Switch (side of phone).
+1. **"I can't hear audio output!"**
+   * Ensure Media Volume is turned up.
+   * **iPhone users:** Flip the physical Silent Switch on the side of your iPhone to ON/Ringer.
 
-2. **"The page won't load."**
-   * Check WiFi: Are you on the same network as the laptop? (Data/4G will NOT work).
-   * Check Spelling: Did you type `https://`? Did you add `:3000` at the end?
-
-3. **"Channel Full" (Realtime Mode only)**
-   * The Realtime system is limited by the config (default 6). Ask the operator to use the Walkie-Talkie folder instead, which supports everyone.
+2. **"Page won't load."**
+   * Verify smartphone is connected to the same Wi-Fi network as the Host Laptop (cellular data/4G will not load local network servers).

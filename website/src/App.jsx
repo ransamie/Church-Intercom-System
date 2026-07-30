@@ -182,7 +182,7 @@ function App() {
         <section className="customizer-section">
           <div className="section-header">
             <h2>Live Theme Configurator</h2>
-            <p>Customize your church name and colors with a single edit in <code>config.json</code></p>
+            <p>Customize your church name and branding directly inside the Desktop Host Control Panel</p>
           </div>
 
           <div className="customizer-grid">
@@ -273,7 +273,7 @@ function App() {
               </svg>
             </div>
             <h3>Zero Config Complexity</h3>
-            <p>Modify <code>config.json</code> to easily rename the system, adjust team passwords, set call limits, and apply your church's color scheme.</p>
+            <p>Launch the Desktop App and select your communication mode with a single click. Zero code or JSON configuration required.</p>
           </div>
         </section>
       </main>
