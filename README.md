@@ -4,7 +4,7 @@
 
 # 📖 Church Intercom System: User Manual
 
-**Secure, offline communication for the Media & Technical Team.**
+**Secure, offline communication for media & technical teams by Ransamie Technologies (RanTech).**
 
 The Church Intercom System provides a fast, local network-based communication platform that runs on your church's Wi-Fi. It operates completely offline, ensuring security, low latency, and ease of use. It is highly customizable and works across all platforms (Windows, Mac, Linux, Android, iOS).
 

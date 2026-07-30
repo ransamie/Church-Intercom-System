@@ -67,7 +67,7 @@
     ]
   },
   "keywords": ["church", "intercom", "walkie-talkie", "conference"],
-  "author": "Ransamie",
+  "author": "Ransamie Technologies (RanTech)",
   "license": "MIT",
   "devDependencies": {
     "electron": "^36.0.0",

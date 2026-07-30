@@ -2,14 +2,14 @@
 
 **Effective Date:** July 30, 2026  
 **Software:** Church Intercom System  
-**Author:** Ransamie  
+**Developer:** Ransamie Technologies (RanTech)  
 
 ---
 
 ## 1. Terms of Use
 By downloading, installing, or using the **Church Intercom System** (the "Software"), you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the Software.
 
-The Software is free and open-source software provided under the **MIT License**. You are free to use it for personal, ministry, or institutional purposes without any fee.
+The Software is free and open-source software provided under the **MIT License** by **Ransamie Technologies (RanTech)**. You are free to use it for personal, ministry, or institutional purposes without any fee.
 
 ---
 
@@ -27,12 +27,12 @@ The Software is free and open-source software provided under the **MIT License**
 ## 3. Disclaimer of Warranty
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
 
-The author does not guarantee uninterrupted operation, network latency performance, or compatibility with all local network infrastructure.
+Ransamie Technologies (RanTech) does not guarantee uninterrupted operation, network latency performance, or compatibility with all local network infrastructure.
 
 ---
 
 ## 4. Limitation of Liability
-IN NO EVENT SHALL THE AUTHOR (RANSAMIE) OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THIS SOFTWARE.
+IN NO EVENT SHALL RANSAMIE TECHNOLOGIES (RANTECH) OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THIS SOFTWARE.
 
 ---
 

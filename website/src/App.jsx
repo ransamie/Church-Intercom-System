@@ -236,7 +236,7 @@ function App() {
       <footer>
         <p>Open Source Project for Church Technical & Media Teams.</p>
         <p className="sub-footer">
-          Created with ❤️ by <a href="https://github.com/ransamie" target="_blank" rel="noreferrer">Ransamie</a>
+          Created with ❤️ by <a href="https://github.com/ransamie" target="_blank" rel="noreferrer">Ransamie Technologies (RanTech)</a>
         </p>
       </footer>
     </div>
