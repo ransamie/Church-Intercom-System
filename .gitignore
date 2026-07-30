@@ -1,13 +1,16 @@
-# Ignore the heavy dependencies folder
+# Ignore dependencies
 node_modules/
+launcher/node_modules/
+website/node_modules/
 
-# Ignore local secrets
+# Ignore build artifacts & installer executables
+launcher/dist-installer/
+website/dist/
+*.exe
+
+# Ignore local certificates & secrets
 key.pem
 cert.pem
-
-# Ignore the portable engine (users will install their own)
-node.exe
-*.exe
 
 # Ignore system files
 .DS_Store

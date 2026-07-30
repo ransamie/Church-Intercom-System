@@ -1,0 +1,82 @@
+{
+  "name": "church-intercom-launcher",
+  "version": "1.0.0",
+  "description": "Church Intercom System — Desktop Launcher",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder --win --mac --linux"
+  },
+  "build": {
+    "appId": "com.ransamie.church-intercom",
+    "productName": "Church Intercom",
+    "icon": "assets/logo.png",
+    "directories": {
+      "output": "dist-installer"
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "assets/logo.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Church Intercom"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "icon": "assets/logo.png",
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "icon": "assets/logo.png",
+      "category": "Utility"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "assets/**",
+      "../config.json",
+      "../Walkie-Talkie/**",
+      "../Realtime-Conference/**",
+      "!../Walkie-Talkie/node_modules/**",
+      "!../Realtime-Conference/node_modules/**"
+    ],
+    "extraResources": [
+      {
+        "from": "../config.json",
+        "to": "config.json"
+      },
+      {
+        "from": "../Walkie-Talkie",
+        "to": "Walkie-Talkie",
+        "filter": ["**/*", "!node_modules/**"]
+      },
+      {
+        "from": "../Realtime-Conference",
+        "to": "Realtime-Conference",
+        "filter": ["**/*", "!node_modules/**"]
+      }
+    ]
+  },
+  "keywords": ["church", "intercom", "walkie-talkie", "conference"],
+  "author": "Ransamie",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^36.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "qrcode": "^1.5.4",
+    "selfsigned": "^5.4.0",
+    "socket.io": "^4.8.3"
+  }
+}

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Church Intercom Launcher</title>
+  <style>
+    :root {
+      --bg: #0d0d12;
+      --card-bg: #161821;
+      --primary: #007bff;
+      --success: #2ecc71;
+      --danger: #ff4444;
+      --text: #ffffff;
+      --text-muted: #9aa0a6;
+      --border: rgba(255,255,255,0.08);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      user-select: none;
+    }
+    header {
+      padding: 20px 30px;
+      background: #12131a;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+    .brand img { width: 36px; height: 36px; border-radius: 8px; }
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: rgba(255,68,68,0.15);
+      color: var(--danger);
+      border: 1px solid rgba(255,68,68,0.3);
+    }
+    .status-badge.online {
+      background: rgba(46,204,113,0.15);
+      color: var(--success);
+      border-color: rgba(46,204,113,0.3);
+    }
+
+    main {
+      flex: 1;
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      align-items: center;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .mode-btn {
+      width: 100%;
+      padding: 20px;
+      margin-top: 15px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+      transition: all 0.2s;
+    }
+    .mode-btn.walkie { background: #007bff; }
+    .mode-btn.realtime { background: #8b5cf6; }
+    .mode-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+    .stop-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--danger);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .server-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-image {
+      width: 200px;
+      height: 200px;
+      border-radius: 16px;
+      background: white;
+      padding: 10px;
+      margin: 20px 0;
+    }
+
+    .url-display {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    footer {
+      padding: 15px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <img src="assets/logo.png" alt="Logo" />
+      <span>Church Intercom</span>
+    </div>
+    <div id="statusBadge" class="status-badge">● Server Offline</div>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2 style="margin-bottom: 10px;">Select Intercom Mode</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Choose today's operating mode to launch the network server.</p>
+
+      <button class="mode-btn walkie" onclick="launchMode('walkie')">
+        📻 Walkie-Talkie Mode
+        <div style="font-size: 0.8rem; font-weight: normal; margin-top: 4px;">Unlimited users • Push-to-talk</div>
+      </button>
+
+      <button class="mode-btn realtime" onclick="launchMode('realtime')">
+        🎧 Realtime Conference
+        <div style="font-size: 0.8rem; font-weight: normal; margin-top: 4px;">Up to 6 users • Hands-free call</div>
+      </button>
+
+      <button id="stopBtn" class="stop-btn" style="display: none;" onclick="stopServer()">
+        ⏹️ Stop Server
+      </button>
+    </div>
+
+    <div class="card server-info">
+      <div id="offlineView">
+        <h3 style="color: var(--text-muted);">Server is Ready</h3>
+        <p style="color: #666; margin-top: 10px;">Click a mode on the left to start sharing with your team.</p>
+      </div>
+
+      <div id="onlineView" style="display: none;">
+        <h3 style="color: var(--success);">Scan to Connect Phone</h3>
+        <img id="qrCodeImg" class="qr-image" src="" alt="QR Code" />
+        <p style="color: var(--text-muted); margin-bottom: 5px; font-size: 0.9rem;">Or type in mobile browser:</p>
+        <div id="urlText" class="url-display" onclick="openServerUrl()">https://192.168.1.100:3000</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Church Intercom Desktop Host Control Panel • Open Source
+  </footer>
+
+  <script>
+    let currentUrl = '';
+
+    async function launchMode(mode) {
+      document.getElementById('statusBadge').innerText = '⏳ Starting Server...';
+      const res = await window.api.startServer(mode);
+      if (res.success) {
+        currentUrl = res.url;
+        document.getElementById('statusBadge').className = 'status-badge online';
+        document.getElementById('statusBadge').innerText = `🟢 Server Live (${res.mode.toUpperCase()})`;
+        document.getElementById('offlineView').style.display = 'none';
+        document.getElementById('onlineView').style.display = 'block';
+        document.getElementById('stopBtn').style.display = 'block';
+        document.getElementById('qrCodeImg').src = res.qrCode;
+        document.getElementById('urlText').innerText = res.url;
+      } else {
+        alert("Failed to start server: " + res.error);
+        document.getElementById('statusBadge').className = 'status-badge';
+        document.getElementById('statusBadge').innerText = '● Server Offline';
+      }
+    }
+
+    async function stopServer() {
+      await window.api.stopServer();
+      document.getElementById('statusBadge').className = 'status-badge';
+      document.getElementById('statusBadge').innerText = '● Server Offline';
+      document.getElementById('offlineView').style.display = 'block';
+      document.getElementById('onlineView').style.display = 'none';
+      document.getElementById('stopBtn').style.display = 'none';
+    }
+
+    function openServerUrl() {
+      if (currentUrl) window.api.openUrl(currentUrl);
+    }
+  </script>
+</body>
+</html>
