@@ -26,8 +26,9 @@ No code editing or JSON configuration required! Everything is managed directly f
 For the person responsible for running the intercom system during service.
 
 ### Step 1: Launch Host App
-1. Install and open the **Church Intercom Host App** (`Church Intercom Setup 1.0.0.exe`).
-2. Connect your Host Laptop to the Church Wi-Fi network.
+1. Download the latest installer from the **[GitHub Releases Tab](https://github.com/ransamie/Church-Intercom-System/releases)** (Available for Windows, Mac, and Linux).
+2. Install and open the **Church Intercom Host App**.
+3. Connect your Host Laptop to the Church Wi-Fi network.
 3. **Sunday Best Practice (Fixed IP):** Configure a **DHCP Reservation** in your router for the host laptop (e.g., `192.168.1.50`). This keeps the exact same IP address and QR code every Sunday so mobile team members can open their PWA home screen shortcut without re-typing IP addresses.
 
 ### Step 2: Select Communication Mode
