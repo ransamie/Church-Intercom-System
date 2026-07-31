@@ -359,9 +359,6 @@
         </div>
     </div>
 
-    <!-- SILENT AUDIO LOOP TO PREVENT BACKGROUND SLEEP -->
-    <audio id="silentAudio" loop playsinline src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
-
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
@@ -394,8 +391,6 @@
                 if ('wakeLock' in navigator) {
                     wakeLock = await navigator.wakeLock.request('screen');
                 }
-                // Play silent audio to keep audio session alive
-                document.getElementById('silentAudio').play().catch(() => {});
             } catch (err) {
                 console.log('Wake Lock Error:', err);
             }
@@ -494,6 +489,40 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});
         }
+
+        let deferredPrompt;
+        let pwaSupported = false;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            pwaSupported = true;
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.style.display = 'inline-flex';
+                installBtn.onclick = () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            installBtn.style.display = 'none';
+                        }
+                        deferredPrompt = null;
+                    });
+                };
+            }
+        });
+
+        setTimeout(() => {
+            if (!pwaSupported) {
+                const installBtn = document.getElementById('installBtn');
+                if (installBtn) {
+                    installBtn.style.display = 'inline-flex';
+                    installBtn.innerHTML = '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> How to Install App';
+                    installBtn.onclick = () => {
+                        alert("For security reasons, Chrome requires a trusted SSL certificate to show the automatic install prompt.\n\nTo install manually:\n1. Tap the 3 dots (⋮) in the top right of your Chrome browser.\n2. Select 'Add to Home screen'.");
+                    };
+                }
+            }
+        }, 1500);
     </script>
 </body>
 </html>

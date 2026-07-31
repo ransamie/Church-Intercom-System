@@ -273,6 +273,90 @@
       border-top: 1px solid var(--card-border);
       background: #0b0c10;
     }
+
+    /* --- SETTINGS MODAL --- */
+    .settings-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .settings-modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      width: 480px;
+      max-width: 90%;
+      padding: 30px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    
+    /* --- QR MODAL --- */
+    #qrModal {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 24px;
+      width: 400px;
+      max-width: 90%;
+      text-align: center;
+    }
+    #qrModal img {
+      width: 300px;
+      height: 300px;
+      background: white;
+      padding: 10px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+    .settings-modal h2 { margin-bottom: 20px; font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-muted); }
+    .form-group input[type="text"], .form-group input[type="password"] {
+      width: 100%; padding: 12px; border-radius: 10px;
+      background: rgba(0,0,0,0.3); border: 1px solid var(--card-border);
+      color: white; outline: none;
+    }
+    .theme-swatches { display: flex; gap: 10px; margin-top: 5px; }
+    .theme-swatch {
+      width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent;
+      cursor: pointer; transition: transform 0.2s;
+    }
+    .theme-swatch:hover { transform: scale(1.1); }
+    .theme-swatch.active { border-color: white; transform: scale(1.1); box-shadow: 0 0 10px currentColor; }
+    .logo-upload-btn {
+      display: inline-block; padding: 10px 15px; background: rgba(255,255,255,0.1);
+      border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: background 0.2s;
+    }
+    .logo-upload-btn:hover { background: rgba(255,255,255,0.2); }
+    .settings-actions { display: flex; justify-content: flex-end; gap: 15px; margin-top: 25px; }
+    .btn-cancel { background: transparent; border: 1px solid var(--card-border); color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer; }
+    .btn-save { background: var(--primary); border: none; color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+    
+    .settings-btn {
+      width: 100%;
+      padding: 14px;
+      background: rgba(255,255,255,0.05);
+      color: white;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-top: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .settings-btn:hover { background: rgba(255,255,255,0.1); }
   </style>
 </head>
 <body>
@@ -314,16 +398,21 @@
       </button>
 
       <button class="mode-btn realtime" onclick="launchMode('realtime')">
-        <svg class="icon-svg" style="width:28px; height:28px;" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        <svg class="icon-svg" style="width:28px; height:28px;" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
         <div>
           <div>Realtime Conference</div>
-          <div style="font-size:0.75rem; font-weight:normal; opacity:0.8;">Up to 6 users • Hands-free call</div>
+          <div style="font-size:0.75rem; font-weight:normal; opacity:0.8;">Up to 6 users • Audio & Video call</div>
         </div>
       </button>
 
       <button id="stopBtn" class="stop-btn" style="display: none;" onclick="stopServer()">
         <svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
         Stop Host Server
+      </button>
+
+      <button class="settings-btn" onclick="openSettings()">
+        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+        App Settings
       </button>
     </div>
 
@@ -337,7 +426,7 @@
 
       <div id="onlineView" style="display: none; height:100%; flex-direction:column;">
         <div class="qr-container">
-          <img id="qrCodeImg" class="qr-image" src="" alt="QR Code" />
+          <img id="qrCodeImg" class="qr-image" src="" alt="QR Code" onclick="openQrModal()" />
           <div class="url-info">
             <h4>Scan with Phone Camera to Connect:</h4>
             <div id="urlText" class="url-link" onclick="openServerUrl()">https://192.168.1.100:3000</div>
@@ -377,9 +466,71 @@
     Church Intercom Desktop Host Control Panel • Developed by Ransamie Technologies (RanTech)
   </footer>
 
+  <!-- SETTINGS MODAL -->
+  <div id="settingsOverlay" class="settings-overlay">
+    <div class="settings-modal">
+      <h2><svg class="icon-svg" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg> App Settings</h2>
+      
+      <div class="form-group">
+        <label>Church / Ministry Name:</label>
+        <input type="text" id="settingAppName" placeholder="Church Intercom System" />
+      </div>
+
+      <div class="form-group">
+        <label>System Password:</label>
+        <input type="password" id="settingPassword" placeholder="media" />
+      </div>
+
+      <div class="form-group">
+        <label>Accent Theme Color:</label>
+        <div class="theme-swatches" id="themeSwatches">
+          <div class="theme-swatch" style="background: #007bff;" onclick="selectTheme('#007bff')" data-color="#007bff"></div>
+          <div class="theme-swatch" style="background: #2ecc71;" onclick="selectTheme('#2ecc71')" data-color="#2ecc71"></div>
+          <div class="theme-swatch" style="background: #8b5cf6;" onclick="selectTheme('#8b5cf6')" data-color="#8b5cf6"></div>
+          <div class="theme-swatch" style="background: #f59e0b;" onclick="selectTheme('#f59e0b')" data-color="#f59e0b"></div>
+          <div class="theme-swatch" style="background: #ef4444;" onclick="selectTheme('#ef4444')" data-color="#ef4444"></div>
+          <div class="theme-swatch" style="background: #14b8a6;" onclick="selectTheme('#14b8a6')" data-color="#14b8a6"></div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 20px;">
+        <label>Custom Church Logo:</label>
+        <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+          <img id="logoPreview" src="" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #000; border: 1px solid var(--card-border); display: none;" />
+          <label class="logo-upload-btn">
+            Upload Image (JPG/PNG)
+            <input type="file" id="logoUploadInput" accept="image/*" style="display:none;" onchange="handleLogoUpload(event)">
+          </label>
+          <span id="logoUploadStatus" style="font-size:0.8rem; color:var(--success); display:none;">Saved ✓</span>
+        </div>
+      </div>
+
+      <div class="settings-actions">
+        <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+        <button class="btn-save" onclick="saveSettings()">Save Changes</button>
+      </div>
+    </div>
+    
+    <div id="qrModal">
+      <h2 style="margin-bottom:20px;">Scan to Connect</h2>
+      <img id="largeQrImg" src="" alt="Large QR Code" />
+      <button class="btn-cancel" onclick="closeQrModal()" style="width:100%;">Close</button>
+    </div>
+  </div>
+
   <script>
     let currentUrl = '';
+    let selectedPrimaryColor = '#007bff';
 
+    window.addEventListener('load', async () => {
+      const config = await window.api.getConfig();
+      if (config.appName) document.getElementById('settingAppName').value = config.appName;
+      if (config.password) document.getElementById('settingPassword').value = config.password;
+      if (config.theme && config.theme.primaryColor) {
+        selectTheme(config.theme.primaryColor);
+      }
+    });
+    
     // Remove splash screen fast
     window.addEventListener('load', () => {
       setTimeout(() => {
@@ -448,6 +599,82 @@
         tbody.appendChild(tr);
       });
     });
+
+    /* --- SETTINGS LOGIC --- */
+    function openSettings() {
+      document.getElementById('settingsOverlay').style.display = 'flex';
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsOverlay').style.display = 'none';
+      document.getElementById('logoUploadStatus').style.display = 'none';
+      document.querySelector('.settings-modal').style.display = 'block';
+      document.getElementById('qrModal').style.display = 'none';
+    }
+
+    function openQrModal() {
+      const qrSrc = document.getElementById('qrCodeImg').src;
+      if (!qrSrc) return;
+      document.getElementById('largeQrImg').src = qrSrc;
+      
+      document.querySelector('.settings-modal').style.display = 'none';
+      document.getElementById('qrModal').style.display = 'flex';
+      document.getElementById('settingsOverlay').style.display = 'flex';
+    }
+
+    function closeQrModal() {
+      closeSettings();
+    }
+
+    function selectTheme(color) {
+      selectedPrimaryColor = color;
+      document.documentElement.style.setProperty('--primary', color);
+      const swatches = document.querySelectorAll('.theme-swatch');
+      swatches.forEach(s => {
+        if (s.getAttribute('data-color') === color) s.classList.add('active');
+        else s.classList.remove('active');
+      });
+    }
+
+    async function handleLogoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = e.target.result;
+        const res = await window.api.uploadLogo(base64);
+        if (res.success) {
+          document.getElementById('logoPreview').src = base64;
+      document.getElementById('logoPreview').style.display = 'block';
+      document.getElementById('logoUploadStatus').style.display = 'inline';
+        } else {
+          alert('Failed to save logo: ' + res.error);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveSettings() {
+      const config = {
+        appName: document.getElementById('settingAppName').value,
+        password: document.getElementById('settingPassword').value,
+        theme: {
+          primaryColor: selectedPrimaryColor,
+          backgroundColor: '#1a1a1a'
+        }
+      };
+      
+      const res = await window.api.saveSettings(config);
+      if (res.success) {
+        closeSettings();
+        if (document.getElementById('statusText').innerText !== 'Server Offline') {
+          window.api.showMessage("Settings saved successfully! You must 'Stop Host Server' and start it again for changes to apply fully to connected devices.");
+        }
+      } else {
+        window.api.showMessage("Failed to save settings: " + res.error);
+      }
+    }
   </script>
 </body>
 </html>

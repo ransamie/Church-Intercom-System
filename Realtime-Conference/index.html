@@ -164,20 +164,43 @@
         }
 
         .peer-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 16px;
-            border-radius: 16px;
+            background: transparent;
+            border: none;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
             text-align: center;
             font-weight: 600;
             font-size: 0.95rem;
             transition: all 0.3s;
         }
 
-        .peer-card.speaking {
+        .peer-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            color: var(--text-muted);
+        }
+
+        .peer-card.speaking .peer-avatar {
             border-color: var(--success-color);
-            box-shadow: 0 0 20px rgba(46, 204, 113, 0.3);
-            background: rgba(46, 204, 113, 0.08);
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
+            animation: pulse-avatar 1.5s infinite;
+            color: var(--success-color);
+        }
+
+        @keyframes pulse-avatar {
+            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(46, 204, 113, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
         }
 
         .mute-control-btn {
@@ -216,6 +239,20 @@
         }
 
         .footer a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
+
+        .install-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
     </style>
 </head>
 <body>
@@ -248,6 +285,11 @@
 
         <div class="footer">
             Developed by <a href="https://github.com/ransamie" target="_blank">Ransamie Technologies (RanTech)</a>
+            <br>
+            <button id="installBtn" class="install-btn" style="display:none;">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Install App
+            </button>
         </div>
     </div>
 
@@ -278,8 +320,6 @@
         </div>
     </div>
 
-    <!-- SILENT AUDIO LOOP TO PREVENT BACKGROUND SLEEP -->
-    <audio id="silentAudio" loop playsinline src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
     <div id="audioContainer" style="display:none;"></div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -302,7 +342,6 @@
         async function requestWakeLock() {
             try {
                 if ('wakeLock' in navigator) await navigator.wakeLock.request('screen');
-                document.getElementById('silentAudio').play().catch(() => {});
             } catch (err) {}
         }
 
@@ -320,7 +359,14 @@
             document.getElementById('currentStationName').innerText = data.stationName;
 
             requestWakeLock();
-            startLocalAudio();
+            startLocalAudio().then(() => {
+                // Connect to existing peers
+                Object.keys(data.peers).forEach(peerId => {
+                    if (peerId !== socket.id) {
+                        createPeerConnection(peerId, true);
+                    }
+                });
+            });
         });
 
         socket.on('auth-error', (msg) => alert(msg));
@@ -334,19 +380,112 @@
                 const card = document.createElement('div');
                 card.className = `peer-card ${u.isSpeaking ? 'speaking' : ''}`;
                 card.id = `peer-${u.id}`;
-                card.innerText = u.stationName;
+                
+                card.innerHTML = `
+                    <div class="peer-avatar">
+                        <svg class="icon-svg" style="width:34px; height:34px;" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    </div>
+                    <div class="peer-name">${u.stationName}</div>
+                `;
+                
                 grid.appendChild(card);
             });
         });
 
-        function startLocalAudio() {
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(stream => {
-                    localStream = stream;
-                    localStream.getAudioTracks()[0].enabled = false; // Start muted
-                })
-                .catch(err => alert("Microphone Permission Required!"));
+        async function startLocalAudio() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                localStream.getAudioTracks()[0].enabled = false; // Start muted
+            } catch (err) {
+                alert("Microphone Permission Required!");
+            }
         }
+
+        socket.on('user-joined', (data) => {
+            if (data.id !== socket.id) {
+                createPeerConnection(data.id, false);
+            }
+        });
+
+        socket.on('speaking-state-update', (data) => {
+            const card = document.getElementById(`peer-${data.id}`);
+            if (card) {
+                if (data.isSpeaking) {
+                    card.classList.add('speaking');
+                } else {
+                    card.classList.remove('speaking');
+                }
+            }
+        });
+
+        socket.on('user-disconnected', (peerId) => {
+            if (peerConnections[peerId]) {
+                peerConnections[peerId].close();
+                delete peerConnections[peerId];
+            }
+            const audioElement = document.getElementById(`audio-${peerId}`);
+            if (audioElement) audioElement.remove();
+        });
+
+        async function createPeerConnection(peerId, isInitiator) {
+            const pc = new RTCPeerConnection(config);
+            peerConnections[peerId] = pc;
+
+            if (localStream) {
+                localStream.getTracks().forEach(track => {
+                    pc.addTrack(track, localStream);
+                });
+            }
+
+            pc.onicecandidate = event => {
+                if (event.candidate) {
+                    socket.emit('candidate', { target: peerId, candidate: event.candidate });
+                }
+            };
+
+            pc.ontrack = event => {
+                let audioElement = document.getElementById(`audio-${peerId}`);
+                if (!audioElement) {
+                    audioElement = document.createElement('audio');
+                    audioElement.id = `audio-${peerId}`;
+                    audioElement.autoplay = true;
+                    document.getElementById('audioContainer').appendChild(audioElement);
+                }
+                audioElement.srcObject = event.streams[0];
+            };
+
+            if (isInitiator) {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                socket.emit('offer', { target: peerId, sdp: pc.localDescription });
+            }
+        }
+
+        socket.on('offer', async (data) => {
+            let pcRef = peerConnections[data.caller];
+            if (!pcRef) {
+                await createPeerConnection(data.caller, false);
+                pcRef = peerConnections[data.caller];
+            }
+            await pcRef.setRemoteDescription(new RTCSessionDescription(data.sdp));
+            const answer = await pcRef.createAnswer();
+            await pcRef.setLocalDescription(answer);
+            socket.emit('answer', { target: data.caller, sdp: pcRef.localDescription });
+        });
+
+        socket.on('answer', async (data) => {
+            const pc = peerConnections[data.caller];
+            if (pc) {
+                await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+            }
+        });
+
+        socket.on('candidate', async (data) => {
+            const pc = peerConnections[data.caller];
+            if (pc) {
+                await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+        });
 
         function toggleMute() {
             if (!localStream) return;
@@ -366,6 +505,45 @@
                 socket.emit('speaking-state', true);
             }
         }
+
+        // Service Worker / PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+
+        let deferredPrompt;
+        let pwaSupported = false;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            pwaSupported = true;
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.style.display = 'inline-flex';
+                installBtn.onclick = () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            installBtn.style.display = 'none';
+                        }
+                        deferredPrompt = null;
+                    });
+                };
+            }
+        });
+
+        setTimeout(() => {
+            if (!pwaSupported) {
+                const installBtn = document.getElementById('installBtn');
+                if (installBtn) {
+                    installBtn.style.display = 'inline-flex';
+                    installBtn.innerHTML = '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> How to Install App';
+                    installBtn.onclick = () => {
+                        alert("For security reasons, Chrome requires a trusted SSL certificate to show the automatic install prompt.\n\nTo install manually:\n1. Tap the 3 dots (⋮) in the top right of your Chrome browser.\n2. Select 'Add to Home screen'.");
+                    };
+                }
+            }
+        }, 1500);
     </script>
 </body>
 </html>

@@ -7,6 +7,7 @@ function App() {
   const [isMuted, setIsMuted] = useState(true);
   const [customName, setCustomName] = useState("Refiner's House Revival Outreach");
   const [customLogo, setCustomLogo] = useState('/logo.jpg');
+  const [themeColor, setThemeColor] = useState('#007bff');
   const [expandedVersion, setExpandedVersion] = useState(null);
   const [releases, setReleases] = useState([]);
 
@@ -19,7 +20,7 @@ function App() {
       .catch(err => console.error("Failed to fetch releases:", err));
   }, []);
 
-  const currentTheme = { primary: '#007bff', secondary: '#0056b3', bg: '#0d0d12' };
+  const currentTheme = { primary: themeColor, bg: '#0d0d12' };
 
   const handleLogoFile = (file) => {
     if (file && file.type.startsWith('image/')) {
@@ -204,6 +205,24 @@ function App() {
 
           <div className="customizer-grid">
             <div className="customizer-controls">
+              <label>
+                Accent Theme Color:
+                <div style={{ display: 'flex', gap: '10px', marginTop: '8px', marginBottom: '15px' }}>
+                  {['#007bff', '#2ecc71', '#8b5cf6', '#f59e0b', '#ef4444', '#14b8a6'].map(color => (
+                    <div 
+                      key={color}
+                      onClick={() => setThemeColor(color)}
+                      style={{
+                        width: '30px', height: '30px', borderRadius: '50%', background: color,
+                        cursor: 'pointer', border: themeColor === color ? '2px solid white' : '2px solid transparent',
+                        transform: themeColor === color ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.2s',
+                        boxShadow: themeColor === color ? `0 0 10px ${color}` : 'none'
+                      }}
+                    />
+                  ))}
+                </div>
+              </label>
+
               <label>
                 Church / Ministry Name:
                 <input 

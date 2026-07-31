@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
@@ -15,7 +15,7 @@ let currentMode = null;
 let cachedCerts = null;
 
 // Pre-generate / Cache 10-Year Certificates for Instant Server Startup
-function getOrGenerateCerts() {
+async function getOrGenerateCertsAsync() {
   if (cachedCerts) return cachedCerts;
 
   const certDir = path.join(app.getPath('userData'), 'certs');
@@ -43,9 +43,14 @@ function getOrGenerateCerts() {
 
   if (needGen) {
     const attrs = [{ name: 'commonName', value: 'ChurchIntercom' }];
-    const pkey = selfsigned.generate(attrs, { days: 3650 }); // 10 Years
-    fs.writeFileSync(keyPath, pkey.private);
-    fs.writeFileSync(certPath, pkey.cert);
+    try {
+      const pkey = await selfsigned.generate(attrs, { days: 3650 });
+      fs.writeFileSync(keyPath, pkey.private);
+      fs.writeFileSync(certPath, pkey.cert);
+    } catch(err) {
+      console.error("Failed to generate certs:", err);
+      throw err;
+    }
   }
 
   cachedCerts = {
@@ -54,7 +59,6 @@ function getOrGenerateCerts() {
   };
   return cachedCerts;
 }
-
 function getLocalIps() {
   const interfaces = os.networkInterfaces();
   const results = [];
@@ -95,11 +99,20 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
+
+  ipcMain.handle('show-message', async (event, msg) => {
+    dialog.showMessageBox({
+      title: 'Church Intercom System',
+      message: msg,
+      type: 'info',
+      buttons: ['OK']
+    });
+  });
 }
 
 app.whenReady().then(() => {
-  // Asynchronously pre-generate certs on background thread so server start is instant
-  setTimeout(getOrGenerateCerts, 10);
+  // Asynchronously pre-generate certs on background thread so server start is fast
+  getOrGenerateCertsAsync().catch(console.error);
   createWindow();
 });
 
@@ -133,31 +146,63 @@ ipcMain.handle('start-server', async (event, mode) => {
     const qrCodeUrl = await QRCode.toDataURL(serverUrl, { margin: 1, width: 220 });
 
     const appDir = path.join(__dirname, '..', mode === 'walkie' ? 'Walkie-Talkie' : 'Realtime-Conference');
-    const configPath = path.join(__dirname, '..', 'config.json');
     
-    let appConfig = {};
+    // Persistent user settings
+    const userDataPath = app.getPath('userData');
+    const userConfigPath = path.join(userDataPath, 'config.json');
+    let appConfig = { password: 'media', maxPeers: 6, appName: 'Church Intercom System', theme: { primaryColor: '#007bff', backgroundColor: '#1a1a1a' } };
+    
     try {
-      appConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      if (fs.existsSync(userConfigPath)) {
+        appConfig = Object.assign(appConfig, JSON.parse(fs.readFileSync(userConfigPath, 'utf8')));
+      } else {
+        // Fallback to default config if user config doesn't exist yet
+        const defaultConfigPath = path.join(__dirname, '..', 'config.json');
+        if (fs.existsSync(defaultConfigPath)) {
+          appConfig = Object.assign(appConfig, JSON.parse(fs.readFileSync(defaultConfigPath, 'utf8')));
+        }
+      }
     } catch(e) {
-      appConfig = { password: 'media', maxPeers: 6, appName: 'Church Intercom System' };
+      console.error("Config load error:", e);
     }
 
     const expressApp = express();
-    const options = getOrGenerateCerts();
+    const options = await getOrGenerateCertsAsync();
 
     activeServer = https.createServer(options, expressApp);
 
+    // Common routes for both modes
+    expressApp.get('/config', (req, res) => res.json(appConfig));
+    expressApp.get('/logo.jpg', (req, res) => {
+      const customLogo = path.join(userDataPath, 'logo.jpg');
+      if (fs.existsSync(customLogo)) {
+        res.sendFile(customLogo);
+      } else {
+        res.sendFile(path.join(appDir, 'logo.jpg'));
+      }
+    });
+    expressApp.use(express.static(appDir));
+    
     if (mode === 'walkie') {
       activeIo = new Server(activeServer, { maxHttpBufferSize: 1e8 });
       let authenticatedUsers = {};
 
-      expressApp.use(express.static(appDir));
       expressApp.get('/', (req, res) => res.sendFile(path.join(appDir, 'index.html')));
-      expressApp.get('/config', (req, res) => res.json(appConfig));
-      expressApp.get('/manifest.json', (req, res) => res.json({ name: appConfig.appName, start_url: '/', display: 'standalone' }));
+      expressApp.get('/manifest.json', (req, res) => res.json({ 
+        name: appConfig.appName, 
+        short_name: 'Intercom',
+        start_url: '/', 
+        display: 'standalone',
+        background_color: '#0d0d12',
+        theme_color: '#0d0d12',
+        icons: [{ src: '/logo.jpg', sizes: '192x192 512x512', type: 'image/jpeg' }]
+      }));
 
       function sendRoster() {
         const roster = Object.values(authenticatedUsers);
+        if (activeIo) {
+          activeIo.emit('roster-update', roster);
+        }
         if (mainWindow) {
           mainWindow.webContents.send('roster-update', roster);
         }
@@ -212,13 +257,22 @@ ipcMain.handle('start-server', async (event, mode) => {
       activeIo = new Server(activeServer);
       let users = {};
 
-      expressApp.use(express.static(appDir));
       expressApp.get('/', (req, res) => res.sendFile(path.join(appDir, 'index.html')));
-      expressApp.get('/config', (req, res) => res.json(appConfig));
-      expressApp.get('/manifest.json', (req, res) => res.json({ name: appConfig.appName, start_url: '/', display: 'standalone' }));
+      expressApp.get('/manifest.json', (req, res) => res.json({ 
+        name: appConfig.appName, 
+        short_name: 'Intercom',
+        start_url: '/', 
+        display: 'standalone',
+        background_color: '#0d0d12',
+        theme_color: '#0d0d12',
+        icons: [{ src: '/logo.jpg', sizes: '192x192 512x512', type: 'image/jpeg' }]
+      }));
 
       function sendRoster() {
         const roster = Object.values(users);
+        if (activeIo) {
+          activeIo.emit('roster-update', roster);
+        }
         if (mainWindow) {
           mainWindow.webContents.send('roster-update', roster);
         }
@@ -293,6 +347,44 @@ ipcMain.handle('stop-server', async () => {
 
 ipcMain.handle('open-url', (event, url) => {
   shell.openExternal(url);
+});
+
+ipcMain.handle('get-config', async () => {
+  const userConfigPath = path.join(app.getPath('userData'), 'config.json');
+  if (fs.existsSync(userConfigPath)) {
+    return JSON.parse(fs.readFileSync(userConfigPath, 'utf8'));
+  }
+  const defaultConfigPath = path.join(__dirname, '..', 'config.json');
+  if (fs.existsSync(defaultConfigPath)) {
+    return JSON.parse(fs.readFileSync(defaultConfigPath, 'utf8'));
+  }
+  return { password: 'media', maxPeers: 6, appName: 'Church Intercom System', theme: { primaryColor: '#007bff', backgroundColor: '#1a1a1a' } };
+});
+
+ipcMain.handle('save-settings', async (event, newConfig) => {
+  try {
+    const userConfigPath = path.join(app.getPath('userData'), 'config.json');
+    let currentConfig = {};
+    if (fs.existsSync(userConfigPath)) {
+      currentConfig = JSON.parse(fs.readFileSync(userConfigPath, 'utf8'));
+    }
+    const mergedConfig = Object.assign(currentConfig, newConfig);
+    fs.writeFileSync(userConfigPath, JSON.stringify(mergedConfig, null, 2));
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('upload-logo', async (event, base64Data) => {
+  try {
+    const customLogoPath = path.join(app.getPath('userData'), 'logo.jpg');
+    const buffer = Buffer.from(base64Data.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+    fs.writeFileSync(customLogoPath, buffer);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
 });
 
 async function stopServer() {
