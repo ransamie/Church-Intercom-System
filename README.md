@@ -8,6 +8,14 @@
 
 The Church Intercom System provides a fast, zero-latency local network communication platform running on your church's Wi-Fi. It operates completely offline, ensuring security, low latency, and ease of use across all platforms (Windows, Mac, Linux, Android, iOS).
 
+## 🚀 What's New in v1.0.3
+We recently rolled out a major update to stabilize the platform and ensure a seamless experience for media teams:
+* **Realtime Grid Sync Fixed:** The conference grid now correctly broadcasts to all connected mobile web clients. Everyone can see who is in the room.
+* **Speaking Indicators Added:** A beautiful pulsing green indicator now surrounds the avatar of whoever is currently speaking, making it easy to identify active audio feeds.
+* **Browser Hangs & Audio Loop Fixed:** Removed the silent `0ms` audio loop hack that was previously causing infinite re-renders and crashing mobile browsers.
+* **PWA Standalone Mode Fixed:** The `manifest.json` was properly linked and configured, allowing users to successfully "Add to Home Screen" and run the intercom as a native standalone app on Android and iOS.
+* **Automated Binary Releases:** Fully automated our GitHub Actions CI/CD pipeline to seamlessly build and distribute Windows (`.exe`), Mac (`.dmg`), and Linux (`.AppImage`) binaries directly to the GitHub Releases tab!
+
 ---
 
 ## ⚙️ Graphical Control Panel & Zero Configuration
