@@ -192,6 +192,7 @@ section {
   color: white;
   padding: 14px 28px;
   border-radius: 30px;
+  border: none;
   text-decoration: none;
   font-weight: 700;
   font-size: 1.05rem;
