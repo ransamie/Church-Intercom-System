@@ -12,13 +12,15 @@ function App() {
   const [releases, setReleases] = useState([]);
 
   useEffect(() => {
+    document.documentElement.style.setProperty('--primary', themeColor);
+    
     fetch('https://api.github.com/repos/ransamie/Church-Intercom-System/releases')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setReleases(data);
       })
       .catch(err => console.error("Failed to fetch releases:", err));
-  }, []);
+  }, [themeColor]);
 
   const currentTheme = { primary: themeColor, bg: '#0d0d12' };
 
@@ -110,6 +112,7 @@ function App() {
               <button 
                 className={`sim-tab ${activeTab === 'walkie' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('walkie')}
+                style={activeTab === 'walkie' ? { backgroundColor: 'var(--primary)', borderColor: 'var(--primary)', color: 'white' } : {}}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '8px' }}>
                   <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
@@ -120,6 +123,7 @@ function App() {
               <button 
                 className={`sim-tab ${activeTab === 'realtime' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('realtime')}
+                style={activeTab === 'realtime' ? { backgroundColor: 'var(--primary)', borderColor: 'var(--primary)', color: 'white' } : {}}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '8px' }}>
                   <path d="M12 3c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z"/>
@@ -174,7 +178,7 @@ function App() {
                     <div className="peer-badge active-speaker">🎥 Camera 1 (Live)</div>
                     <div className="peer-badge">🔊 Sound Desk</div>
                     <div className="peer-badge">💻 Visuals / ProPresenter</div>
-                    <div className="peer-badge me">🙋 You ({isMuted ? 'Muted' : 'Live'})</div>
+                    <div className={`peer-badge me ${!isMuted ? 'active-speaker' : ''}`}>🙋 You ({isMuted ? 'Muted' : 'Live'})</div>
                   </div>
 
                   <button 

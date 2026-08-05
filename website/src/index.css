@@ -38,12 +38,18 @@ body {
   position: absolute;
   width: 70vw;
   height: 70vw;
-  background: radial-gradient(circle, rgba(0, 123, 255, 0.12) 0%, rgba(11, 12, 16, 0) 70%);
+  background: radial-gradient(circle, var(--primary) 0%, rgba(11, 12, 16, 0) 70%);
+  opacity: 0.15;
   top: -25vw;
   left: 15vw;
   z-index: -1;
   border-radius: 50%;
   pointer-events: none;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Header */
@@ -58,6 +64,7 @@ header {
   top: 0;
   z-index: 100;
   border-bottom: 1px solid var(--glass-border);
+  animation: fadeUp 0.6s ease-out forwards;
 }
 
 .logo {
@@ -140,6 +147,8 @@ section {
 .hero {
   text-align: center;
   padding: 5rem 1.5rem 4rem;
+  animation: fadeUp 0.8s ease-out 0.1s forwards;
+  opacity: 0;
 }
 
 .badge {
@@ -221,6 +230,8 @@ section {
 /* Demo Simulator */
 .demo-section {
   padding: 4rem 1.5rem;
+  animation: fadeUp 0.8s ease-out 0.2s forwards;
+  opacity: 0;
 }
 
 .section-header {
@@ -416,6 +427,8 @@ section {
 /* Customizer Section */
 .customizer-section {
   padding: 4rem 1.5rem;
+  animation: fadeUp 0.8s ease-out 0.3s forwards;
+  opacity: 0;
 }
 
 .customizer-grid {
@@ -425,6 +438,12 @@ section {
   align-items: center;
   max-width: 900px;
   margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .customizer-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .customizer-controls {
@@ -575,6 +594,8 @@ section {
   padding: 40px 1.5rem;
   max-width: 1200px;
   margin: 0 auto 60px;
+  animation: fadeUp 0.8s ease-out 0.4s forwards;
+  opacity: 0;
 }
 
 .feature-card {
@@ -619,6 +640,8 @@ section {
 /* DEDICATED DOWNLOAD SECTION */
 .download-section {
   padding-top: 5rem;
+  animation: fadeUp 0.8s ease-out 0.5s forwards;
+  opacity: 0;
 }
 
 .download-header {
