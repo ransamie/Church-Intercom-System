@@ -420,8 +420,8 @@ function App() {
                 download
               >
                 <div className="platform-icon linux">
-                  <svg width="28" height="28" viewBox="0 0 448 512" fill="currentColor">
-                    <path d="M220.8 123.3c1 .5 1.8 1.7 3 1.7 1.1 0 2.8-.4 2.9-1.5.2-1.4-1.9-2.3-3.2-2.9-1.7-.7-3.9-1-5.5-.1-.4.2-.8.7-.6 1.1.3 1.3 2.3 1.1 3.4 1.7zm-21.9 1.7c1.2 0 2-1.2 3-1.7 1.1-.6 3.1-.4 3.5-1.7.2-.4-.2-.9-.6-1.1-1.6-.9-3.8-.6-5.5.1-1.3.6-3.4 1.5-3.2 2.9.1 1 1.8 1.5 2.8 1.5zm70.6-38.3c1.9 4.3 3.4 9.1 4.3 13.9 1 5.3 1.3 10.8 1 16.2-.2 3.8-1 7.5-2.2 11.2-1.3 3.8-3.1 7.4-5.3 10.7-3.9 5.8-8.8 11.1-14.7 15.3-6.6 4.7-14.1 8.3-22 10.8-8 2.6-16.3 4.2-24.6 4.8-7.9.6-15.9.3-23.7-1-7.8-1.3-15.3-3.6-22.3-6.7-7-3.1-13.6-7.1-19.4-12-5.7-4.9-10.7-10.7-14.6-17.1-3.6-5.9-6.3-12.2-7.9-18.8-1.5-6.3-2-12.7-1.5-19.1.5-6.3 1.9-12.5 4.3-18.4 2.4-5.7 5.7-11.1 9.8-15.9 4-4.7 8.8-8.9 14-12.4 5.4-3.6 11.2-6.5 17.3-8.6 6.1-2.1 12.5-3.5 19-4.1 6.5-.5 13 .1 19.3 1.4 6.2 1.2 12.2 3.3 17.7 6.1 5.4 2.7 10.4 6.2 14.7 10.3 4.3 4 8.1 8.5 11.1 13.6zm-86.4 89.2c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm57.2 0c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm25.9-46.7c-2.4-1.1-5.1-1.6-7.8-1.6-2.9 0-5.7.7-8.3 2-2.5 1.3-4.7 3.1-6.4 5.3-1.6 2.1-2.8 4.6-3.4 7.2-.6 2.7-.7 5.5-.3 8.2.4 2.7 1.3 5.3 2.8 7.6 1.4 2.2 3.3 4.1 5.4 5.6 2.3 1.5 4.8 2.6 7.5 3.1 2.7.5 5.5.6 8.2.1 2.8-.5 5.5-1.5 7.9-3 2.4-1.6 4.4-3.6 5.9-6 1.5-2.4 2.5-5 3.1-7.8.6-2.8.6-5.7 0-8.5-.6-2.9-1.7-5.6-3.4-8-1.6-2.4-3.7-4.4-6.1-5.9-2.5-1.5-5.3-2.6-8.2-3-2.8-.5-5.7-.7-8.3-.3-2.7.5-5.2 1.5-7.5 3.1-2.2 1.5-4.1 3.4-5.5 5.6-1.5 2.3-2.4 4.9-2.8 7.6-.4 2.7-.3 5.5.3 8.2.6 2.6 1.8 5.1 3.4 7.2 1.7 2.2 3.9 4 6.4 5.3 2.6 1.3 5.4 2 8.3 2 2.7 0 5.4-.5 7.8-1.6zm-59 86.6c1.3-1.8 3.5-2.3 5.3-1 1.8 1.3 2.3 3.5 1 5.3-1.3 1.8-3.5 2.3-5.3 1-1.8-1.3-2.3-3.5-1-5.3zm93.7 101.4c1 1.7-.2 3.5-2 3.5-1.8 0-3.3-1.8-2.3-3.5 1-1.7 3.3-1.7 4.3 0zm-82.9 0c1-1.7 3.3-1.7 4.3 0 1 1.7-.5 3.5-2.3 3.5-1.8 0-3-1.8-2-3.5zM128 360c-26.5 0-48 21.5-48 48s21.5 48 48 48 48-21.5 48-48-21.5-48-48-48zm192 0c-26.5 0-48 21.5-48 48s21.5 48 48 48 48-21.5 48-48-21.5-48-48-48z"/>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2 4v16h20V4H2zm2 2h16v12H4V6zm3 3l-1.41 1.41L8.17 12l-2.58 2.59L7 16l4-4-4-4zm6 7h6v2h-6v-2z"/>
                   </svg>
                 </div>
                 <div className="platform-info">
@@ -443,18 +443,40 @@ function App() {
             <div className="previous-versions-card">
               <h3 className="previous-versions-title">PREVIOUS VERSIONS</h3>
               {releases.slice(1).map(release => (
-                <div 
-                  key={release.id} 
-                  className="version-row" 
-                  onClick={() => window.open(release.html_url, '_blank')}
-                >
-                  <div className="version-info">
-                    <strong>{release.tag_name}</strong>
-                    <span className="version-date">
-                      {new Date(release.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                <div key={release.id} className="version-wrapper">
+                  <div 
+                    className="version-row" 
+                    onClick={() => setExpandedVersion(expandedVersion === release.id ? null : release.id)}
+                  >
+                    <div className="version-info">
+                      <strong>{release.tag_name}</strong>
+                      <span className="version-date">
+                        {new Date(release.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <span className="chevron" style={{ transform: expandedVersion === release.id ? 'rotate(180deg)' : 'rotate(0)' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </span>
                   </div>
-                  <span className="chevron">↗</span>
+                  {expandedVersion === release.id && (
+                    <div className="version-downloads">
+                      <a href={release.assets.find(a => a.name.endsWith('.exe'))?.browser_download_url || '#'} className="mini-download">
+                         <span className="mini-os">Windows</span>
+                         <span className="mini-size">({Math.round((release.assets.find(a => a.name.endsWith('.exe'))?.size || 0)/1024/1024)} MB)</span>
+                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                      </a>
+                      <a href={release.assets.find(a => a.name.endsWith('.dmg'))?.browser_download_url || '#'} className="mini-download">
+                         <span className="mini-os">macOS</span>
+                         <span className="mini-size">({Math.round((release.assets.find(a => a.name.endsWith('.dmg'))?.size || 0)/1024/1024)} MB)</span>
+                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                      </a>
+                      <a href={release.assets.find(a => a.name.endsWith('.AppImage'))?.browser_download_url || '#'} className="mini-download">
+                         <span className="mini-os">Linux</span>
+                         <span className="mini-size">({Math.round((release.assets.find(a => a.name.endsWith('.AppImage'))?.size || 0)/1024/1024)} MB)</span>
+                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                      </a>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
