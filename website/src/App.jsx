@@ -98,6 +98,13 @@ function App() {
               User Manual & Setup
             </a>
           </div>
+          
+          <div className="hero-illustration">
+            <div className="illustration-glow-wrapper">
+              <img src="/images/media_team.jpg" alt="Media team collaboration" className="hero-img" />
+              <div className="glow-effect"></div>
+            </div>
+          </div>
         </section>
 
         {/* INTERACTIVE DEMO SIMULATOR */}
