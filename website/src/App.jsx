@@ -45,7 +45,7 @@ function App() {
       
       {/* HEADER */}
       <header>
-        <div className="logo">
+        <div className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <img src="/logo.jpg" alt="Church Intercom Logo" className="logo-icon-img" />
           <span className="logo-text">Church Intercom</span>
         </div>
