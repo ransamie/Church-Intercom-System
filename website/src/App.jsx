@@ -115,9 +115,9 @@ function App() {
           </div>
 
           <div className="simulator-card">
-            <div className="sim-tabs">
+            <div className="demo-header">
               <button 
-                className={`sim-tab ${activeTab === 'walkie' ? 'active' : ''}`} 
+                className={`demo-tab ${activeTab === 'walkie' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('walkie')}
                 style={activeTab === 'walkie' ? { backgroundColor: 'var(--primary)', borderColor: 'var(--primary)', color: 'white' } : {}}
               >
@@ -128,7 +128,7 @@ function App() {
                 Walkie-Talkie Mode
               </button>
               <button 
-                className={`sim-tab ${activeTab === 'realtime' ? 'active' : ''}`} 
+                className={`demo-tab ${activeTab === 'realtime' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('realtime')}
                 style={activeTab === 'realtime' ? { backgroundColor: 'var(--primary)', borderColor: 'var(--primary)', color: 'white' } : {}}
               >
@@ -139,67 +139,58 @@ function App() {
               </button>
             </div>
 
-            <div className="sim-screen">
+            <div className="demo-screen">
               {activeTab === 'walkie' ? (
-                <div className="walkie-sim">
-                  <p className="sim-status">
-                    Status: <span className={isTransmitting ? 'text-danger' : 'text-success'}>
+                <div className="walkie-demo">
+                  <p className="status-text">
+                    Status: <span className={isTransmitting ? 'text-danger' : 'text-success'} style={{ color: isTransmitting ? 'var(--danger)' : 'var(--success)'}}>
                       {isTransmitting ? '● TRANSMITTING VOICE...' : '● Online & Ready (Hold to Speak)'}
                     </span>
                   </p>
                   
                   <button 
-                    className={`talk-btn-sim ${isTransmitting ? 'transmitting' : ''}`}
+                    className={`ptt-button ${isTransmitting ? 'transmitting' : ''}`}
                     onMouseDown={() => setIsTransmitting(true)}
                     onMouseUp={() => setIsTransmitting(false)}
                     onTouchStart={() => setIsTransmitting(true)}
                     onTouchEnd={() => setIsTransmitting(false)}
                   >
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style={{ marginBottom: '4px' }}>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style={{ marginBottom: '4px', zIndex: 3 }}>
                       <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
                       <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
                     </svg>
-                    {isTransmitting ? 'TRANSMITTING' : 'HOLD TO TALK'}
+                    <span style={{zIndex: 3}}>{isTransmitting ? 'TRANSMITTING' : 'HOLD TO TALK'}</span>
+                    {isTransmitting && <div className="ptt-ring"></div>}
                   </button>
 
-                  <div className="wave-container">
-                    {isTransmitting && (
-                      <div className="waves">
-                        <span className="wave bar1"></span>
-                        <span className="wave bar2"></span>
-                        <span className="wave bar3"></span>
-                        <span className="wave bar4"></span>
-                        <span className="wave bar5"></span>
-                      </div>
-                    )}
-                  </div>
-                  <small className="sim-hint">Press & hold the big button to simulate transmitting</small>
+                  <p className="hint-text">Press & hold the big button to simulate transmitting</p>
                 </div>
               ) : (
-                <div className="realtime-sim">
-                  <p className="sim-status">
-                    Conference Channel: <span className="text-success">● 4 Team Members Connected</span>
+                <div className="walkie-demo">
+                  <p className="status-text">
+                    Conference Channel: <span style={{ color: 'var(--success)' }}>● 4 Team Members Connected</span>
                   </p>
 
-                  <div className="peer-grid">
-                    <div className="peer-badge active-speaker">🎥 Camera 1 (Live)</div>
-                    <div className="peer-badge">🔊 Sound Desk</div>
-                    <div className="peer-badge">💻 Visuals / ProPresenter</div>
-                    <div className={`peer-badge me ${!isMuted ? 'active-speaker' : ''}`}>🙋 You ({isMuted ? 'Muted' : 'Live'})</div>
+                  <div className="conference-grid">
+                    <div className="conf-node active"><span className="node-icon">🎥</span> Camera 1</div>
+                    <div className="conf-node"><span className="node-icon">🔊</span> Sound Desk</div>
+                    <div className="conf-node"><span className="node-icon">💻</span> Visuals</div>
+                    <div className={`conf-node self ${!isMuted ? 'active' : ''}`}><span className="node-icon">🙋</span> You ({isMuted ? 'Muted' : 'Live'})</div>
                   </div>
 
                   <button 
-                    className={`mute-btn-sim ${isMuted ? 'muted' : 'live'}`}
+                    className={`conf-mute-button ${isMuted ? 'muted' : 'live'}`}
                     onClick={() => setIsMuted(!isMuted)}
+                    style={{ background: isMuted ? 'var(--danger)' : 'var(--primary)' }}
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '8px' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                       {isMuted ? (
                         <path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.27-1.48.42-2.31.42-3.31 0-6-2.69-6-6H4c0 4.02 3.01 7.34 6.86 7.82V21h2.28v-3.18c.84-.11 1.64-.37 2.37-.75l3.22 3.22L20 19.01 4.27 3z"/>
                       ) : (
                         <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
                       )}
                     </svg>
-                    {isMuted ? 'MIC IS MUTED (Tap to Talk)' : 'MIC IS LIVE (Tap to Mute)'}
+                    {isMuted ? 'UNMUTE MIC' : 'MUTE MIC'}
                   </button>
                 </div>
               )}
