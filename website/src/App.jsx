@@ -491,26 +491,22 @@ function App() {
                   </div>
                   {expandedVersion === release.id && (
                     <div className="version-downloads">
-                      <a href={release.assets.find(a => a.name.endsWith('.apk'))?.browser_download_url || '#'} className="mini-download">
-                         <span className="mini-os">Android</span>
-                         <span className="mini-size">({Math.round((release.assets.find(a => a.name.endsWith('.apk'))?.size || 0)/1024/1024)} MB)</span>
-                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                      </a>
-                      <a href={release.assets.find(a => a.name.endsWith('.exe'))?.browser_download_url || '#'} className="mini-download">
-                         <span className="mini-os">Windows</span>
-                         <span className="mini-size">({Math.round((release.assets.find(a => a.name.endsWith('.exe'))?.size || 0)/1024/1024)} MB)</span>
-                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                      </a>
-                      <a href={release.assets.find(a => a.name.endsWith('.dmg'))?.browser_download_url || '#'} className="mini-download">
-                         <span className="mini-os">macOS</span>
-                         <span className="mini-size">({Math.round((release.assets.find(a => a.name.endsWith('.dmg'))?.size || 0)/1024/1024)} MB)</span>
-                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                      </a>
-                      <a href={release.assets.find(a => a.name.endsWith('.AppImage'))?.browser_download_url || '#'} className="mini-download">
-                         <span className="mini-os">Linux</span>
-                         <span className="mini-size">({Math.round((release.assets.find(a => a.name.endsWith('.AppImage'))?.size || 0)/1024/1024)} MB)</span>
-                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                      </a>
+                      {[
+                        { os: 'Android', ext: '.apk' },
+                        { os: 'Windows', ext: '.exe' },
+                        { os: 'macOS', ext: '.dmg' },
+                        { os: 'Linux', ext: '.AppImage' }
+                      ].map(platform => {
+                        const asset = release.assets.find(a => a.name.endsWith(platform.ext));
+                        if (!asset) return null;
+                        return (
+                          <a key={platform.os} href={asset.browser_download_url} className="mini-download">
+                             <span className="mini-os">{platform.os}</span>
+                             <span className="mini-size">({Math.round(asset.size/1024/1024)} MB)</span>
+                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                          </a>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
