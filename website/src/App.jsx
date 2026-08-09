@@ -166,22 +166,52 @@ function App() {
                   <p className="hint-text">Press & hold the big button to simulate transmitting</p>
                 </div>
               ) : (
-                <div className="walkie-demo">
-                  <p className="status-text">
-                    Conference Channel: <span style={{ color: 'var(--success)' }}>● 4 Team Members Connected</span>
-                  </p>
+                <div className="realtime-demo-container">
+                  <div className="rt-header">
+                    <div className="rt-header-left">
+                      <div className="rt-icon-circle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#3b82f6"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
+                      </div>
+                      <span className="rt-title">Sound</span>
+                    </div>
+                    <div className="rt-header-right">
+                      <div className="rt-status-pill">
+                        <span className="rt-dot"></span> Screen Active
+                      </div>
+                    </div>
+                  </div>
 
-                  <div className="conference-grid">
-                    <div className="conf-node active"><span className="node-icon">🎥</span> Camera 1</div>
-                    <div className="conf-node"><span className="node-icon">🔊</span> Sound Desk</div>
-                    <div className="conf-node"><span className="node-icon">💻</span> Visuals</div>
-                    <div className={`conf-node self ${!isMuted ? 'active' : ''}`}><span className="node-icon">🙋</span> You ({isMuted ? 'Muted' : 'Live'})</div>
+                  <div className="rt-connected-text">CONNECTED (0)</div>
+
+                  <div className="rt-grid">
+                    <div className="rt-grid-circle"></div>
+                    <div className="rt-grid-circle"></div>
+                    <div className="rt-grid-circle"></div>
+                    <div className="rt-grid-circle"></div>
+                    <div className="rt-grid-circle"></div>
+                    <div className="rt-grid-circle"></div>
+                  </div>
+
+                  <div className="rt-user-section">
+                    <div className="rt-user-circle">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    </div>
+                    <div className="rt-user-name">Sound</div>
+                    <div className="rt-user-badge">YOU</div>
+                    
+                    <div className="rt-controls">
+                      <button className="rt-control-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#a1a1aa"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                      </button>
+                      <button className="rt-control-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#a1a1aa"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                      </button>
+                    </div>
                   </div>
 
                   <button 
-                    className={`conf-mute-button ${isMuted ? 'muted' : 'live'}`}
+                    className={`rt-main-btn ${isMuted ? 'muted' : 'live'}`}
                     onClick={() => setIsMuted(!isMuted)}
-                    style={{ background: isMuted ? 'var(--danger)' : 'var(--primary)' }}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                       {isMuted ? (
@@ -190,8 +220,10 @@ function App() {
                         <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
                       )}
                     </svg>
-                    {isMuted ? 'UNMUTE MIC' : 'MUTE MIC'}
+                    {isMuted ? 'MIC MUTED • Tap to talk' : 'MIC LIVE • Tap to mute'}
                   </button>
+
+                  <div className="rt-footer">Built by <span className="rt-brand">RanTech</span></div>
                 </div>
               )}
             </div>

@@ -420,74 +420,191 @@ section {
 }
 
 /* Conference Demo */
-.conference-grid {
+/* Conference Demo - Mobile App UI Replica */
+.realtime-demo-container {
+  background: #111111;
+  border-radius: 20px;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin: 0 auto 3rem;
-  padding: 0;
-  max-width: 260px;
+  align-items: center;
+  max-width: 320px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
 }
 
-.conf-node {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--glass-border);
-  padding: 16px 12px;
-  border-radius: 16px;
+.rt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.rt-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rt-icon-circle {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rt-title {
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.rt-status-pill {
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  font-size: 0.75rem;
   font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rt-dot {
+  width: 6px;
+  height: 6px;
+  background: #10b981;
+  border-radius: 50%;
+}
+
+.rt-connected-text {
+  color: #71717a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.rt-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px 30px;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.rt-grid-circle {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.rt-user-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.rt-user-circle {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.rt-user-name {
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.rt-user-badge {
+  border: 1px solid #d97706;
+  color: #60a5fa;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  letter-spacing: 0.5px;
+}
+
+.rt-controls {
+  display: flex;
+  gap: 20px;
+}
+
+.rt-control-btn {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.rt-main-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 30px;
+  border: none;
+  color: white;
+  font-weight: 800;
   font-size: 0.95rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: all 0.3s;
-}
-
-.conf-node:hover {
-  background: rgba(255, 255, 255, 0.06);
-  transform: translateY(-2px);
-}
-
-.conf-node.active {
-  border-color: var(--success);
-  color: var(--success);
-  background: rgba(46, 204, 113, 0.1);
-  box-shadow: 0 0 20px rgba(46, 204, 113, 0.15);
-}
-
-.conf-node.self {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.node-icon {
-  font-size: 1.1rem;
-}
-
-.conf-mute-button {
-  background: var(--danger);
-  color: white;
-  border: none;
-  padding: 16px 32px;
-  border-radius: 30px;
-  font-weight: 800;
-  font-size: 1rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
   gap: 10px;
-  transition: all 0.3s;
-  box-shadow: 0 8px 25px rgba(255, 68, 68, 0.4);
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(255, 68, 68, 0.4);
+  margin-bottom: 20px;
+  transition: all 0.2s;
 }
 
-.conf-mute-button:hover {
+.rt-main-btn.muted {
+  background: #ff4444;
+}
+
+.rt-main-btn.live {
+  background: #10b981;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+}
+
+.rt-main-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(255, 68, 68, 0.5);
-  background: #ff5555;
 }
 
-.conf-mute-button:active {
-  transform: translateY(0) scale(0.98);
+.rt-footer {
+  color: #71717a;
+  font-size: 0.75rem;
+}
+
+.rt-brand {
+  color: #a1a1aa;
+  font-weight: 700;
 }
 
 /* Customizer Section */
