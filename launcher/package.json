@@ -1,6 +1,6 @@
 {
   "name": "church-intercom-launcher",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Church Intercom System — Desktop Launcher",
   "main": "main.js",
   "repository": {
