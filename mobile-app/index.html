@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Viewport settings strictly for native mobile app scale and disable zoom -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000">
+    <title>Church Intercom</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- MAIN CONNECT SCREEN -->
+      <div id="connection-screen" class="screen active">
+        <div class="top-section">
+          <div class="logo-wrapper">
+            <svg class="app-logo" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm0-4h-2V7h2v7z"/>
+            </svg>
+          </div>
+          <h1 class="app-title">Church Intercom</h1>
+          <p class="app-subtitle">Connect to the host server</p>
+        </div>
+
+        <div class="middle-section">
+          <div class="input-container">
+            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+            </svg>
+            <input type="text" id="ip-input" placeholder="Enter IP (e.g. 192.168.1.5)" inputmode="decimal" />
+          </div>
+        </div>
+
+        <div class="bottom-section">
+          <button id="btn-connect" class="btn btn-primary">
+            Connect
+          </button>
+          
+          <div class="or-divider">
+            <div class="line"></div>
+            <span>OR</span>
+            <div class="line"></div>
+          </div>
+
+          <button id="btn-scan" class="btn btn-secondary">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+              <rect x="7" y="7" width="10" height="10" rx="1"/>
+            </svg>
+            Scan QR Code
+          </button>
+        </div>
+      </div>
+
+      <!-- FULL SCREEN SCANNER -->
+      <div id="scanner-screen" class="screen">
+        <div id="qr-reader"></div>
+        <div class="scanner-overlay">
+          <div class="scanner-target"></div>
+        </div>
+        <button id="btn-cancel-scan" class="btn-fab">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

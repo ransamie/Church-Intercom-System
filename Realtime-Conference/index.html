@@ -7,12 +7,13 @@
     <link rel="manifest" href="manifest.json">
     <style>
         :root {
-            --primary-color: #007bff;
-            --background-color: #12131a;
-            --card-bg: rgba(26, 28, 40, 0.95);
+            --primary-color: #ff7a00; /* Fallback, overridden by config */
+            --background-color: #0b0c10;
+            --surface-color: #1a1b23;
+            --surface-active: #232530;
             --text-color: #ffffff;
-            --text-muted: #9aa0a6;
-            --border-color: rgba(255, 255, 255, 0.1);
+            --text-muted: #8e929c;
+            --border-color: rgba(255, 255, 255, 0.05);
             --danger-color: #ff4444;
             --success-color: #2ecc71;
         }
@@ -21,7 +22,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -30,7 +31,6 @@
             color: var(--text-color);
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
@@ -38,75 +38,193 @@
 
         /* --- LOGIN SCREEN --- */
         #loginScreen {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 35px 25px;
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            text-align: center;
             width: 100%;
             max-width: 380px;
-            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .logo-box {
+            width: 80px;
+            height: 80px;
+            background: var(--surface-color);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px dashed rgba(255,255,255,0.1);
         }
 
         .app-logo-img {
-            width: 80px;
-            height: 80px;
-            border-radius: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            width: 100%;
+            height: 100%;
             object-fit: cover;
         }
 
-        h1 { font-size: 1.6rem; margin-bottom: 5px; font-weight: 700; }
-        .subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; }
+        h1 {
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #d1d4db;
+        }
 
-        .form-group { text-align: left; margin-bottom: 18px; }
-        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+        .live-status {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
 
-        input {
+        .live-status .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--success-color);
+        }
+
+        .presets-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background: rgba(0,0,0,0.4);
-            color: #fff;
-            font-size: 1rem;
-            outline: none;
+            margin-bottom: 15px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        .presets-header .line {
+            width: 20px;
+            height: 1px;
+            background-color: var(--border-color);
         }
 
         .preset-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-top: 8px;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 25px;
         }
 
         .preset-btn {
-            background: rgba(255,255,255,0.05);
+            background: var(--surface-color);
             border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            padding: 8px 5px;
-            border-radius: 8px;
+            border-radius: 20px;
+            padding: 16px 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .preset-btn .icon {
+            font-size: 1.5rem;
+            opacity: 0.7;
+        }
+
+        .preset-btn .label {
             font-size: 0.75rem;
             font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .preset-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .preset-btn.active .icon { opacity: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        .preset-btn.active .label { color: #fff; }
+
+        .custom-label {
+            width: 100%;
+            text-align: left;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .input-container {
+            width: 100%;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            opacity: 0.5;
+        }
+
+        .input-icon-right {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            opacity: 0.5;
             cursor: pointer;
         }
 
-        .preset-btn:hover { background: var(--primary-color); color: white; }
+        input {
+            width: 100%;
+            padding: 18px 18px 18px 50px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            background: var(--surface-color);
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-weight: 500;
+        }
+
+        input::placeholder { color: #5a5f6e; }
+        input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(255,122,0,0.2); }
 
         .unlock-btn {
             width: 100%;
-            padding: 15px;
-            border-radius: 14px;
+            padding: 18px;
+            border-radius: 30px;
             border: none;
-            background: var(--primary-color);
-            color: white;
+            background: var(--surface-active);
+            color: var(--text-muted);
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
             cursor: pointer;
             margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .unlock-btn:hover, .unlock-btn.ready {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-color);
         }
 
         /* --- CONFERENCE SCREEN --- */
@@ -116,142 +234,251 @@
             align-items: center;
             width: 100%;
             max-width: 440px;
+            padding-top: 10px;
         }
 
         .status-header {
-            width: 100%;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 16px 20px;
-            border-radius: 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .station-badge {
-            font-weight: 700;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .wake-badge {
-            font-size: 0.75rem;
-            color: var(--success-color);
-            background: rgba(46,204,113,0.1);
-            padding: 4px 10px;
-            border-radius: 12px;
-            border: 1px solid rgba(46,204,113,0.3);
-        }
-
-        .peer-roster-title {
-            align-self: flex-start;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-        }
-
-        .peer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
             width: 100%;
             margin-bottom: 30px;
         }
 
-        .peer-card {
-            background: transparent;
-            border: none;
-            padding: 10px;
+        .station-badge { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.1rem; color: #fff; letter-spacing: 0.5px; }
+        .mic-circle {
+            width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;
+        }
+        .mic-circle .icon-svg { width: 20px; height: 20px; fill: var(--primary-color); }
+        .icon-svg { width: 24px; height: 24px; fill: currentColor; }
+        
+        .wake-badge { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; background: rgba(46, 204, 113, 0.1); color: var(--success-color); padding: 6px 12px; border-radius: 20px; font-weight: 600; border: 1px solid rgba(46, 204, 113, 0.2); }
+        .wake-badge .dot { width: 6px; height: 6px; background: var(--success-color); border-radius: 50%; }
+
+        .peer-roster-title { width: 100%; text-align: left; font-size: 0.75rem; font-weight: 700; color: #626573; margin-bottom: 20px; letter-spacing: 2px; text-transform: uppercase; }
+
+        .peer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px 10px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .peer-slot {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.3s;
         }
 
         .peer-avatar {
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.08);
+            background: var(--surface-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 3px solid transparent;
+            color: #d1d4db;
+            border: 2px dashed rgba(255,255,255,0.05);
             transition: all 0.3s;
-            color: var(--text-muted);
+            position: relative;
+        }
+        
+        .peer-avatar .user-icon { width: 30px; height: 30px; fill: currentColor; opacity: 0.8; }
+        
+        .peer-name { font-size: 0.75rem; font-weight: 600; color: #626573; text-align: center; }
+
+        /* Filled slot */
+        .peer-slot.filled .peer-avatar {
+            border-style: solid;
+            border-color: rgba(255,255,255,0.1);
+            background: #1e1f29;
+            color: #fff;
+        }
+        
+        .peer-slot.filled .peer-name { color: #d1d4db; }
+
+        /* Speaking slot */
+        .peer-slot.speaking .peer-avatar {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(255,122,0,0.3);
+        }
+        
+        .peer-slot.speaking .speaking-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: var(--success-color);
+            border: 2px solid var(--background-color);
+            border-radius: 50%;
         }
 
-        .peer-card.speaking .peer-avatar {
-            border-color: var(--success-color);
-            box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
-            animation: pulse-avatar 1.5s infinite;
-            color: var(--success-color);
+        /* Empty slot */
+        .peer-slot.empty .peer-avatar .user-icon { display: none; }
+        .peer-slot.empty .peer-name { color: rgba(255,255,255,0.05); }
+
+        /* YOU Section */
+        .you-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 50px;
         }
 
-        @keyframes pulse-avatar {
-            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5); }
-            70% { box-shadow: 0 0 0 15px rgba(46, 204, 113, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        .you-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--surface-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            position: relative;
+            margin-bottom: 5px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
+
+        .you-avatar .user-icon { width: 45px; height: 45px; fill: currentColor; }
+        
+        .you-avatar.muted .you-avatar-slash {
+            position: absolute;
+            width: 50px;
+            height: 3px;
+            background: rgba(255,255,255,0.2);
+            transform: rotate(-45deg);
+        }
+
+        .you-name { font-size: 1rem; font-weight: 700; color: #fff; }
+        .you-badge { font-size: 0.65rem; background: rgba(255,122,0,0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-weight: 800; border: 1px solid rgba(255,122,0,0.3); letter-spacing: 1px; }
+
+        .bottom-controls {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .media-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .media-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--surface-color);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #d1d4db;
+            cursor: pointer;
+        }
+        .media-btn .icon-svg { width: 20px; height: 20px; opacity: 0.7; }
+        .media-divider { width: 1px; height: 20px; background: rgba(255,255,255,0.1); }
 
         .mute-control-btn {
             width: 100%;
-            padding: 18px;
-            border-radius: 40px;
+            padding: 20px;
+            border-radius: 35px;
             border: none;
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: white;
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            transition: all 0.3s;
+            gap: 12px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.1s, background 0.2s;
         }
 
-        .mute-control-btn.muted {
-            background: var(--danger-color);
-            box-shadow: 0 8px 25px rgba(255, 68, 68, 0.4);
-        }
-
-        .mute-control-btn.live {
-            background: var(--success-color);
-            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
-        }
-
-        .icon-svg { width: 22px; height: 22px; fill: currentColor; }
+        .mute-control-btn:active { transform: scale(0.98); }
+        .mute-control-btn.muted { background: var(--danger-color); box-shadow: 0 10px 30px rgba(255,68,68,0.3); }
+        .mute-control-btn.talking { background: var(--success-color); box-shadow: 0 10px 40px rgba(46,204,113,0.4); }
+        .mute-control-btn .icon-svg { width: 24px; height: 24px; }
+        #muteText { font-weight: 700; font-size: 1rem; }
 
         .footer {
             margin-top: 30px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
+            font-size: 0.75rem;
+            color: #5a5f6e;
             text-align: center;
         }
 
-        .footer a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
+        .footer a { color: #8e929c; text-decoration: none; font-weight: 600; }
+        .footer a:hover { color: var(--primary-color); }
 
         .install-btn {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: white;
-            padding: 8px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #d1d4db;
+            padding: 10px 16px;
             border-radius: 20px;
             font-size: 0.8rem;
-            margin-top: 10px;
+            font-weight: 600;
+            margin-top: 15px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+        }
+
+        /* --- TOAST NOTIFICATIONS --- */
+        .toast-container {
+            position: fixed;
+            bottom: calc(env(safe-area-inset-bottom, 20px) + 40px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            pointer-events: none;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .toast {
+            background: rgba(28, 28, 30, 0.95);
+            backdrop-filter: blur(10px);
+            color: #FFF;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: toastFadeIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: auto;
+        }
+
+        .toast.toast-error { border-left: 4px solid #FF3B30; }
+        .toast.toast-success { border-left: 4px solid #34C759; }
+        .toast.toast-info { border-left: 4px solid #0A84FF; }
+        .toast.hiding { animation: toastFadeOut 0.3s ease forwards; }
+
+        @keyframes toastFadeIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes toastFadeOut {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(20px) scale(0.9); }
         }
     </style>
 </head>
@@ -259,36 +486,67 @@
 
     <!-- LOGIN SCREEN -->
     <div id="loginScreen">
-        <img src="logo.jpg" alt="Logo" class="app-logo-img" />
-        <h1 id="appTitle">Refiner's House Revival Outreach</h1>
-        <p class="subtitle" id="appDesc">Realtime Conference Mode</p>
+        <div class="logo-box">
+            <img src="logo.jpg" alt="Logo" class="app-logo-img" />
+        </div>
+        <h1 id="appTitle">REVIVAL OUTREACH</h1>
+        <div class="live-status">
+            <span class="dot"></span> LIVE
+        </div>
         
-        <div class="form-group">
-            <label>1. Select Your Station:</label>
-            <input type="text" id="stationInput" placeholder="e.g. Cam 1, Sound Desk" />
-            <div class="preset-grid">
-                <button className="preset-btn" onclick="setPreset('Cam 1')">Cam 1</button>
-                <button className="preset-btn" onclick="setPreset('Cam 2')">Cam 2</button>
-                <button className="preset-btn" onclick="setPreset('Sound Desk')">Sound</button>
-                <button className="preset-btn" onclick="setPreset('Director')">Director</button>
-                <button className="preset-btn" onclick="setPreset('Visuals')">Visuals</button>
-                <button className="preset-btn" onclick="setPreset('Usher 1')">Usher</button>
+        <div class="presets-header">
+            <div class="line"></div>
+            <span>PRESETS</span>
+        </div>
+        
+        <div class="preset-grid" id="presetGrid">
+            <div class="preset-btn" onclick="setPreset('Cam1')">
+                <span class="icon">🎥</span>
+                <span class="label">Cam1</span>
+            </div>
+            <div class="preset-btn" onclick="setPreset('Cam2')">
+                <span class="icon">🎥</span>
+                <span class="label">Cam2</span>
+            </div>
+            <div class="preset-btn" onclick="setPreset('Sound')">
+                <span class="icon">🎧</span>
+                <span class="label">Sound</span>
+            </div>
+            <div class="preset-btn" onclick="setPreset('Director')">
+                <span class="icon">🎬</span>
+                <span class="label">Director</span>
+            </div>
+            <div class="preset-btn" onclick="setPreset('Visuals')">
+                <span class="icon">✨</span>
+                <span class="label">Visuals</span>
+            </div>
+            <div class="preset-btn" onclick="setPreset('Usher')">
+                <span class="icon">🤝</span>
+                <span class="label">Usher</span>
             </div>
         </div>
-
-        <div class="form-group">
-            <label>2. Enter Team Password:</label>
-            <input type="password" id="passwordInput" placeholder="••••••••" />
+        
+        <div class="custom-label">Or type custom</div>
+        
+        <div class="input-container">
+            <span class="input-icon">✏️</span>
+            <input type="text" id="stationInput" placeholder="e.g. Usher - Main Gate" oninput="clearPresetActive()" />
         </div>
-
-        <button class="unlock-btn" onclick="attemptLogin()">JOIN CONFERENCE</button>
-
+        
+        <div class="input-container">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="passwordInput" placeholder="Team password" />
+            <span class="input-icon-right" id="togglePassword" onclick="togglePasswordVisibility()">👁️</span>
+        </div>
+        
+        <button class="unlock-btn" onclick="attemptLogin()">JOIN CONFERENCE &rarr;</button>
+        
         <div class="footer">
-            Developed by <a href="https://github.com/ransamie" target="_blank">Ransamie Technologies (RanTech)</a>
+            Developed by <a href="https://github.com/ransamie" target="_blank">Ransamie Technologies</a>
             <br>
             <button id="installBtn" class="install-btn" style="display:none;">
-                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                Install App
+                <svg class="icon-svg" viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                How to Install App
             </button>
         </div>
     </div>
@@ -297,26 +555,48 @@
     <div id="conferenceScreen">
         <div class="status-header">
             <div class="station-badge">
-                <svg class="icon-svg" style="color:var(--primary-color)" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                <div class="mic-circle">
+                    <svg viewBox="0 0 24 24" class="icon-svg"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                </div>
                 <span id="currentStationName">Cam 1</span>
             </div>
             <div class="wake-badge">
-                Screen Active
+                <span class="dot"></span> Screen Active
             </div>
         </div>
 
-        <div class="peer-roster-title">CONNECTED STATIONS</div>
+        <div class="peer-roster-title">CONNECTED (<span id="connectedCount">0</span>)</div>
         <div id="peerGrid" class="peer-grid">
             <!-- Dynamic station cards will be inserted here -->
         </div>
 
-        <button id="muteBtn" class="mute-control-btn muted" onclick="toggleMute()">
-            <svg id="muteIcon" class="icon-svg" viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.27-1.48.42-2.31.42-3.31 0-6-2.69-6-6H4c0 4.02 3.01 7.34 6.86 7.82V21h2.28v-3.18c.84-.11 1.64-.37 2.37-.75l3.22 3.22L20 19.01 4.27 3z"/></svg>
-            <span id="muteText">MIC IS MUTED (Tap to Talk)</span>
-        </button>
+        <div class="you-section">
+            <div class="you-avatar" id="youAvatar">
+                <svg viewBox="0 0 24 24" class="user-icon"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <div class="you-avatar-slash" id="youAvatarSlash"></div>
+            </div>
+            <div class="you-name" id="youNameDisplay">Cam 1</div>
+            <div class="you-badge">YOU</div>
+        </div>
+
+        <div class="bottom-controls">
+            <div class="media-controls" style="margin-bottom: 10px; display: flex; gap: 15px;">
+                <button class="media-btn" id="deafenBtn" onclick="toggleDeafen()">
+                    <svg id="deafenIcon" viewBox="0 0 24 24" class="icon-svg"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                </button>
+                <button class="media-btn" id="endCallBtn" onclick="endCall()" style="background: rgba(255, 60, 60, 0.2); color: #ff3c3c; border-color: rgba(255, 60, 60, 0.3);">
+                    <svg viewBox="0 0 24 24" class="icon-svg"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+                </button>
+            </div>
+            
+            <button id="muteBtn" class="mute-control-btn muted" onclick="toggleMute()">
+                <svg id="muteIcon" class="icon-svg" viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.27-1.48.42-2.31.42-3.31 0-6-2.69-6-6H4c0 4.02 3.01 7.34 6.86 7.82V21h2.28v-3.18c.84-.11 1.64-.37 2.37-.75l3.22 3.22L20 19.01 4.27 3z"/></svg>
+                <span id="muteText">MIC MUTED &bull; Tap to talk</span>
+            </button>
+        </div>
 
         <div class="footer">
-            Built by <a href="https://github.com/ransamie" target="_blank">Ransamie Technologies (RanTech)</a>
+            Built by <a href="https://github.com/ransamie" target="_blank">RanTech</a>
         </div>
     </div>
 
@@ -325,6 +605,29 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+
+        // --- TOAST NOTIFICATIONS ---
+        const toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container';
+        document.body.appendChild(toastContainer);
+
+        function showToast(message, isError = false, duration = 3500) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${isError ? 'toast-error' : 'toast-success'}`;
+            
+            const icon = isError 
+                ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`
+                : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+            
+            toast.innerHTML = `${icon}<span>${message}</span>`;
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
         let localStream = null;
         let peerConnections = {};
         let isMuted = true;
@@ -332,11 +635,69 @@
 
         const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-        document.getElementById('stationInput').value = localStorage.getItem('stationName') || 'Cam 1';
+        // --- DYNAMIC CONFIG FETCH ---
+        fetch('/config').then(res => res.json()).then(data => {
+            if (data.theme && data.theme.primaryColor) {
+                document.documentElement.style.setProperty('--primary-color', data.theme.primaryColor);
+            }
+            if (data.appName) {
+                document.getElementById('appTitle').innerText = data.appName.toUpperCase();
+            }
+        }).catch(err => console.error('Failed to load config', err));
+
+        document.getElementById('stationInput').value = localStorage.getItem('stationName') || '';
+
+        // Auto-login logic
+        const savedPass = localStorage.getItem('stationPass');
+        const savedName = localStorage.getItem('stationName');
+        if (savedPass && savedName) {
+            document.getElementById('passwordInput').value = savedPass;
+            myStationName = savedName;
+            // Add a small delay to ensure socket connects before emitting
+            setTimeout(() => {
+                socket.emit('login', { password: savedPass, stationName: savedName });
+            }, 500);
+        }
 
         function setPreset(name) {
             document.getElementById('stationInput').value = name;
+            updatePresetActive(name);
         }
+
+        function clearPresetActive() {
+            const val = document.getElementById('stationInput').value;
+            updatePresetActive(val);
+        }
+
+        function updatePresetActive(currentValue) {
+            const btns = document.querySelectorAll('.preset-btn');
+            btns.forEach(btn => {
+                if (btn.getAttribute('onclick').includes(`'${currentValue}'`)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            const joinBtn = document.querySelector('.unlock-btn');
+            if (currentValue.trim().length > 0) joinBtn.classList.add('ready');
+            else joinBtn.classList.remove('ready');
+        }
+
+        function togglePasswordVisibility() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('togglePassword');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerText = '🔒';
+            } else {
+                input.type = 'password';
+                icon.innerText = '👁️';
+            }
+        }
+        
+        // Initial setup for presets
+        setTimeout(() => updatePresetActive(document.getElementById('stationInput').value), 100);
 
         // Screen Wake Lock API
         async function requestWakeLock() {
@@ -348,15 +709,27 @@
         function attemptLogin() {
             const pass = document.getElementById('passwordInput').value;
             myStationName = document.getElementById('stationInput').value.trim() || 'Station Device';
-            localStorage.setItem('stationName', myStationName);
+            
+            if (!pass || !myStationName) {
+                showToast("Please enter both Name and Password", true);
+                return;
+            }
 
+            localStorage.setItem('stationName', myStationName);
+            localStorage.setItem('stationPass', pass);
             socket.emit('login', { password: pass, stationName: myStationName });
+        }
+
+        function endCall() {
+            localStorage.removeItem('stationPass');
+            window.location.reload();
         }
 
         socket.on('login-success', (data) => {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('conferenceScreen').style.display = 'flex';
             document.getElementById('currentStationName').innerText = data.stationName;
+            document.getElementById('youNameDisplay').innerText = data.stationName;
 
             requestWakeLock();
             startLocalAudio().then(() => {
@@ -369,26 +742,32 @@
             });
         });
 
-        socket.on('auth-error', (msg) => alert(msg));
-        socket.on('room-full', () => alert('Conference Room is Full!'));
+        socket.on('auth-error', (msg) => {
+            showToast(msg, true);
+            localStorage.removeItem('stationPass');
+        });
+        socket.on('room-full', () => showToast('Conference Room is Full!', true));
 
         socket.on('roster-update', (roster) => {
             const grid = document.getElementById('peerGrid');
             grid.innerHTML = '';
+            
+            // Remove 'self' from roster for the grid display
+            const otherPeers = roster.filter(u => u.id !== socket.id);
+            document.getElementById('connectedCount').innerText = otherPeers.length;
 
-            roster.forEach(u => {
-                const card = document.createElement('div');
-                card.className = `peer-card ${u.isSpeaking ? 'speaking' : ''}`;
-                card.id = `peer-${u.id}`;
-                
-                card.innerHTML = `
+            otherPeers.forEach(u => {
+                const slot = document.createElement('div');
+                slot.className = `peer-slot filled ${u.isSpeaking ? 'speaking' : ''}`;
+                slot.id = `peer-${u.id}`;
+                slot.innerHTML = `
                     <div class="peer-avatar">
-                        <svg class="icon-svg" style="width:34px; height:34px;" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        <svg class="user-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        <div class="speaking-dot" style="display: ${u.isSpeaking ? 'block' : 'none'};"></div>
                     </div>
                     <div class="peer-name">${u.stationName}</div>
                 `;
-                
-                grid.appendChild(card);
+                grid.appendChild(slot);
             });
         });
 
@@ -397,7 +776,7 @@
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 localStream.getAudioTracks()[0].enabled = false; // Start muted
             } catch (err) {
-                alert("Microphone Permission Required!");
+                showToast("Microphone Permission Required!", true, 5000);
             }
         }
 
@@ -408,12 +787,15 @@
         });
 
         socket.on('speaking-state-update', (data) => {
-            const card = document.getElementById(`peer-${data.id}`);
-            if (card) {
+            const slot = document.getElementById(`peer-${data.id}`);
+            if (slot) {
+                const dot = slot.querySelector('.speaking-dot');
                 if (data.isSpeaking) {
-                    card.classList.add('speaking');
+                    slot.classList.add('speaking');
+                    if (dot) dot.style.display = 'block';
                 } else {
-                    card.classList.remove('speaking');
+                    slot.classList.remove('speaking');
+                    if (dot) dot.style.display = 'none';
                 }
             }
         });
@@ -449,6 +831,10 @@
                     audioElement = document.createElement('audio');
                     audioElement.id = `audio-${peerId}`;
                     audioElement.autoplay = true;
+                    // Respect deafen state for newly joined users
+                    if (typeof isDeafened !== 'undefined' && isDeafened) {
+                        audioElement.muted = true;
+                    }
                     document.getElementById('audioContainer').appendChild(audioElement);
                 }
                 audioElement.srcObject = event.streams[0];
@@ -494,15 +880,54 @@
 
             const btn = document.getElementById('muteBtn');
             const text = document.getElementById('muteText');
+            const icon = document.getElementById('muteIcon');
+            const youAvatar = document.getElementById('youAvatar');
 
             if (isMuted) {
                 btn.className = 'mute-control-btn muted';
-                text.innerText = 'MIC IS MUTED (Tap to Talk)';
+                text.innerHTML = 'MIC MUTED &bull; Tap to talk';
+                icon.innerHTML = '<path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.27-1.48.42-2.31.42-3.31 0-6-2.69-6-6H4c0 4.02 3.01 7.34 6.86 7.82V21h2.28v-3.18c.84-.11 1.64-.37 2.37-.75l3.22 3.22L20 19.01 4.27 3z"/>';
+                youAvatar.classList.add('muted');
+                youAvatar.style.borderColor = 'rgba(255,255,255,0.05)';
+                youAvatar.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
                 socket.emit('speaking-state', false);
             } else {
-                btn.className = 'mute-control-btn live';
-                text.innerText = 'MIC IS LIVE (Tap to Mute)';
+                btn.className = 'mute-control-btn talking';
+                text.innerText = 'TALKING (Tap to mute)';
+                icon.innerHTML = '<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>';
+                youAvatar.classList.remove('muted');
+                youAvatar.style.borderColor = 'var(--primary-color)';
+                youAvatar.style.boxShadow = '0 0 20px rgba(255,122,0,0.3)';
                 socket.emit('speaking-state', true);
+            }
+        }
+
+        let isDeafened = false;
+        function toggleDeafen() {
+            isDeafened = !isDeafened;
+            const btn = document.getElementById('deafenBtn');
+            const icon = document.getElementById('deafenIcon');
+
+            // Iterate through all remote audio elements and mute them
+            const audioElements = document.querySelectorAll('#audioContainer audio');
+            audioElements.forEach(audio => {
+                audio.muted = isDeafened;
+            });
+
+            if (isDeafened) {
+                btn.classList.add('muted');
+                btn.style.background = 'rgba(255, 60, 60, 0.2)';
+                btn.style.color = '#ff3c3c';
+                // Volume off icon
+                icon.innerHTML = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
+                showToast("Speaker muted", false, 2000);
+            } else {
+                btn.classList.remove('muted');
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.color = '#d1d4db';
+                // Volume up icon
+                icon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+                showToast("Speaker on", false, 2000);
             }
         }
 
@@ -511,39 +936,44 @@
             navigator.serviceWorker.register('/sw.js').catch(() => {});
         }
 
+        const isNativeApp = navigator.userAgent.includes('ChurchIntercomApp');
+        
         let deferredPrompt;
         let pwaSupported = false;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            pwaSupported = true;
-            const installBtn = document.getElementById('installBtn');
-            if (installBtn) {
-                installBtn.style.display = 'inline-flex';
-                installBtn.onclick = () => {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            installBtn.style.display = 'none';
-                        }
-                        deferredPrompt = null;
-                    });
-                };
-            }
-        });
-
-        setTimeout(() => {
-            if (!pwaSupported) {
+        
+        if (!isNativeApp) {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                pwaSupported = true;
                 const installBtn = document.getElementById('installBtn');
                 if (installBtn) {
                     installBtn.style.display = 'inline-flex';
-                    installBtn.innerHTML = '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> How to Install App';
                     installBtn.onclick = () => {
-                        alert("For security reasons, Chrome requires a trusted SSL certificate to show the automatic install prompt.\n\nTo install manually:\n1. Tap the 3 dots (⋮) in the top right of your Chrome browser.\n2. Select 'Add to Home screen'.");
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then((choiceResult) => {
+                            if (choiceResult.outcome === 'accepted') {
+                                installBtn.style.display = 'none';
+                            }
+                            deferredPrompt = null;
+                        });
                     };
                 }
-            }
-        }, 1500);
+            });
+
+            setTimeout(() => {
+                if (!pwaSupported) {
+                    const installBtn = document.getElementById('installBtn');
+                    if (installBtn) {
+                        installBtn.style.display = 'inline-flex';
+                        installBtn.innerHTML = '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> How to Install App';
+                        installBtn.onclick = () => {
+                            showToast("<b>Manual Install Required:</b><br/>1. Tap the 3 dots (⋮) in the top right of Chrome.<br/>2. Select 'Add to Home screen'.", false, 10000);
+                        };
+                    }
+                }
+            }, 1500);
+        }
     </script>
 </body>
 </html>

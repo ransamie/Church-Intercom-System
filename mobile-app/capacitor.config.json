@@ -1,0 +1,12 @@
+{
+  "appId": "com.rantech.churchintercom",
+  "appName": "Church Intercom",
+  "webDir": "dist",
+  "server": {
+    "cleartext": true,
+    "allowNavigation": [
+      "*"
+    ]
+  },
+  "appendUserAgent": "ChurchIntercomApp"
+}
