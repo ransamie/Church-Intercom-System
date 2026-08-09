@@ -421,11 +421,12 @@ section {
 
 /* Conference Demo */
 .conference-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-  margin-bottom: 3rem;
-  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0 auto 3rem;
+  padding: 0;
+  max-width: 260px;
 }
 
 .conf-node {
