@@ -28,13 +28,17 @@
     },
     "win": {
       "target": [
-        "nsis"
+        "nsis",
+        "portable"
       ],
       "icon": "assets/logo.png"
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
+      "requestedExecutionLevel": "asInvoker",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Church Intercom",

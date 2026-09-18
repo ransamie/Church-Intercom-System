@@ -46,7 +46,13 @@ function App() {
       
       {/* HEADER */}
       <header>
-        <div className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+        <div 
+          className="logo" 
+          role="button" 
+          tabIndex={0}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        >
           <img src="/logo.jpg" alt="Church Intercom Logo" className="logo-icon-img" />
           <span className="logo-text">Church Intercom</span>
         </div>
@@ -115,7 +121,7 @@ function App() {
             <p>Try out how both communication modes feel in action right now</p>
           </div>
 
-          <div className="simulator-card">
+          <div className="simulator-card demo-container">
             <div className="demo-header">
               <button 
                 className={`demo-tab ${activeTab === 'walkie' ? 'active' : ''}`} 
@@ -155,6 +161,9 @@ function App() {
                     onMouseUp={() => setIsTransmitting(false)}
                     onTouchStart={() => setIsTransmitting(true)}
                     onTouchEnd={() => setIsTransmitting(false)}
+                    onTouchCancel={() => setIsTransmitting(false)}
+                    onContextMenu={(e) => e.preventDefault()}
+                    aria-label="Push to talk button"
                   >
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style={{ marginBottom: '4px', zIndex: 3 }}>
                       <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
@@ -216,18 +225,20 @@ function App() {
                     <div className="rt-user-badge">YOU</div>
                     
                     <div className="rt-controls">
-                      <button className="rt-control-btn">
+                      <button className="rt-control-btn" type="button" aria-label="Toggle speaker audio">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="#a1a1aa"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
                       </button>
-                      <button className="rt-control-btn">
+                      <button className="rt-control-btn" type="button" aria-label="Toggle camera view">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="#a1a1aa"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
                       </button>
                     </div>
                   </div>
 
                   <button 
+                    type="button"
                     className={`rt-main-btn ${isMuted ? 'muted' : 'live'}`}
                     onClick={() => setIsMuted(!isMuted)}
+                    aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                       {isMuted ? (
@@ -253,38 +264,44 @@ function App() {
 
           <div className="customizer-grid">
             <div className="customizer-controls">
-              <label>
+              <label htmlFor="church-name-input">
                 Accent Theme Color:
-                <div style={{ display: 'flex', gap: '10px', marginTop: '8px', marginBottom: '15px' }}>
-                  {['#007bff', '#2ecc71', '#8b5cf6', '#f59e0b', '#ef4444', '#14b8a6'].map(color => (
-                    <div 
-                      key={color}
-                      onClick={() => setThemeColor(color)}
-                      style={{
-                        width: '30px', height: '30px', borderRadius: '50%', background: color,
-                        cursor: 'pointer', border: themeColor === color ? '2px solid white' : '2px solid transparent',
-                        transform: themeColor === color ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.2s',
-                        boxShadow: themeColor === color ? `0 0 10px ${color}` : 'none'
-                      }}
-                    />
-                  ))}
-                </div>
               </label>
+              <div className="theme-buttons-container" role="radiogroup" aria-label="Select accent theme color">
+                {['#007bff', '#2ecc71', '#8b5cf6', '#f59e0b', '#ef4444', '#14b8a6'].map(color => (
+                  <button 
+                    key={color}
+                    type="button"
+                    onClick={() => setThemeColor(color)}
+                    className={`theme-color-btn ${themeColor === color ? 'active' : ''}`}
+                    style={{ '--swatch-color': color }}
+                    role="radio"
+                    aria-checked={themeColor === color}
+                    aria-label={`Select accent color ${color}`}
+                  >
+                    <span className="theme-color-dot" style={{ backgroundColor: color }} />
+                  </button>
+                ))}
+              </div>
 
-              <label>
+              <label htmlFor="church-name-input">
                 Church / Ministry Name:
-                <input 
-                  type="text" 
-                  value={customName} 
-                  onChange={(e) => setCustomName(e.target.value)}
-                  placeholder="Enter your church name..."
-                />
               </label>
+              <input 
+                id="church-name-input"
+                type="text" 
+                value={customName} 
+                onChange={(e) => setCustomName(e.target.value)}
+                placeholder="Enter your church name..."
+              />
 
               <div className="logo-upload-group">
                 <label>Drag & Drop Church Logo:</label>
                 <div 
                   className="logo-drop-box"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') document.getElementById('logo-file-input').click(); }}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
                     e.preventDefault();
@@ -296,7 +313,7 @@ function App() {
                 >
                   <img src={customLogo} alt="Church Logo" className="drop-logo-preview" />
                   <div className="drop-text">
-                    <strong>Drag & Drop Logo Here</strong>
+                    <strong>Tap or Drag Logo Here</strong>
                     <span>or click to browse image file</span>
                   </div>
                   <input 
@@ -312,7 +329,7 @@ function App() {
                   />
                 </div>
               </div>
-              </div>
+            </div>
             <div 
               className="preview-card"
               style={{ 
@@ -481,6 +498,28 @@ function App() {
                 </div>
               </a>
             </div>
+
+            {/* WINDOWS & MACOS FIRST LAUNCH HELPER */}
+            <div className="security-help-card">
+              <div className="security-help-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#facc15" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>First-Time Launch & Security Guidance</span>
+              </div>
+              <p className="security-help-desc">
+                Because Church Intercom is an open-source tool built for media teams without a commercial enterprise certificate, Windows Smart App Control or SmartScreen may prompt on first launch:
+              </p>
+              <div className="security-steps">
+                <div className="security-step-item">
+                  <strong>Windows SmartScreen:</strong> Click <em>More info</em> → <em>Run anyway</em>.
+                </div>
+                <div className="security-step-item">
+                  <strong>Windows 11 Smart App Control:</strong> Right-click the downloaded <code>.exe</code> → <strong>Properties</strong> → Check <strong>Unblock</strong> at the bottom → Click <strong>Apply</strong>.
+                </div>
+                <div className="security-step-item">
+                  <strong>macOS Gatekeeper:</strong> Right-click the <code>.dmg</code> file and select <strong>Open</strong> on first run.
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* PREVIOUS VERSIONS TOGGLE */}
@@ -509,6 +548,15 @@ function App() {
                     <div key={release.id} className="version-wrapper">
                       <div 
                         className="version-row" 
+                        role="button"
+                        tabIndex={0}
+                        aria-expanded={expandedVersion === release.id}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setExpandedVersion(expandedVersion === release.id ? null : release.id);
+                          }
+                        }}
                         onClick={() => setExpandedVersion(expandedVersion === release.id ? null : release.id)}
                       >
                         <div className="version-info">
