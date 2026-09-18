@@ -1052,12 +1052,53 @@ section {
   color: white;
 }
 
+/* Previous Versions Toggle Container */
+.previous-versions-toggle-container {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.btn-toggle-previous {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  padding: 12px 24px;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+.btn-toggle-previous:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-chevron {
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Previous Versions Card */
 .previous-versions-card {
   background: rgba(18, 20, 32, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 1.5rem 2rem;
+  animation: fadeUp 0.3s ease-out forwards;
 }
 
 .previous-versions-title {

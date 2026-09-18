@@ -9,5 +9,11 @@ contextBridge.exposeInMainWorld('api', {
   saveSettings: (config) => ipcRenderer.invoke('save-settings', config),
   uploadLogo: (base64) => ipcRenderer.invoke('upload-logo', base64),
   showMessage: (msg) => ipcRenderer.invoke('show-message', msg),
-  onRosterUpdate: (callback) => ipcRenderer.on('roster-update', (event, roster) => callback(roster))
+  onRosterUpdate: (callback) => ipcRenderer.on('roster-update', (event, roster) => callback(roster)),
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  downloadUpdate: (url, name) => ipcRenderer.invoke('download-update', url, name),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
+  onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (event, info) => callback(info)),
+  onUpdateProgress: (callback) => ipcRenderer.on('update-download-progress', (event, progress) => callback(progress)),
+  onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (event, data) => callback(data))
 });

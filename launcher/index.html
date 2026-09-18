@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Church Intercom Control Panel — RanTech</title>
+  <title>Church Intercom Control Panel</title>
   <style>
     :root {
       --bg: #0d0d12;
@@ -15,6 +15,154 @@
       --danger: #ff4444;
       --text: #ffffff;
       --text-muted: #9aa0a6;
+    }
+
+    /* --- UPDATE BADGE & MODAL --- */
+    .update-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(59, 130, 246, 0.25));
+      color: #c4b5fd;
+      border: 1px solid rgba(167, 139, 250, 0.5);
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+      transition: all 0.2s ease;
+      animation: pulseGlow 2.5s infinite;
+    }
+    .update-badge:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(59, 130, 246, 0.4));
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 10px rgba(139, 92, 246, 0.25); }
+      50% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.6); }
+    }
+    .update-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #a78bfa;
+    }
+
+    #updateModal {
+      display: none;
+      flex-direction: column;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      width: 480px;
+      max-width: 90%;
+      padding: 30px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      position: relative;
+    }
+    .update-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .update-icon-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(139, 92, 246, 0.15);
+      color: #a78bfa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .update-modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .update-version-pills {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      font-size: 0.85rem;
+    }
+    .version-pill {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 4px 10px;
+      border-radius: 12px;
+      color: var(--text-muted);
+    }
+    .version-pill.new {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      font-weight: 700;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .update-notes-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.85rem;
+      color: #d1d5db;
+      max-height: 140px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+    .update-progress-container {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .update-progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .update-progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      border-radius: 6px;
+      transition: width 0.2s ease;
+    }
+    .update-progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .update-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    .btn-update-now {
+      background: linear-gradient(135deg, #007bff 0%, #8b5cf6 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-update-now:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
     }
 
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -374,9 +522,16 @@
       <img src="assets/logo.png" alt="Logo" />
       <span>Church Intercom Host</span>
     </div>
-    <div id="statusBadge" class="status-badge">
-      <span class="pulse-dot"></span>
-      <span id="statusText">Server Offline</span>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div id="updateBadge" class="update-badge" style="display: none;" onclick="openUpdateModal()" title="Click to review and install update">
+        <span class="update-dot"></span>
+        <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        <span id="updateBadgeText">Update Available</span>
+      </div>
+      <div id="statusBadge" class="status-badge">
+        <span class="pulse-dot"></span>
+        <span id="statusText">Server Offline</span>
+      </div>
     </div>
   </header>
 
@@ -505,6 +660,11 @@
         </div>
       </div>
 
+      <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.85rem; color: var(--text-muted);" id="settingsVersionLabel">Church Intercom v1.0.12</span>
+        <button type="button" class="btn-cancel" style="font-size: 0.8rem; padding: 6px 14px;" onclick="manualCheckForUpdates(event)">Check for Updates</button>
+      </div>
+
       <div class="settings-actions">
         <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
         <button class="btn-save" onclick="saveSettings()">Save Changes</button>
@@ -515,6 +675,51 @@
       <h2 style="margin-bottom:20px;">Scan to Connect</h2>
       <img id="largeQrImg" src="" alt="Large QR Code" />
       <button class="btn-cancel" onclick="closeQrModal()" style="width:100%;">Close</button>
+    </div>
+
+    <!-- UPDATE MODAL -->
+    <div id="updateModal">
+      <div class="update-modal-header">
+        <div class="update-icon-circle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="update-modal-title">Software Update Available</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted);">A newer release is ready to download and install.</div>
+        </div>
+      </div>
+
+      <div class="update-version-pills">
+        <span class="version-pill" id="currentVersionPill">Current: v1.0.12</span>
+        <span>➔</span>
+        <span class="version-pill new" id="newVersionPill">Latest: v1.0.13</span>
+      </div>
+
+      <div class="update-notes-box" id="updateNotesBox">
+        Fetching release notes...
+      </div>
+
+      <div class="update-progress-container" id="updateProgressContainer">
+        <div class="update-progress-bar-bg">
+          <div class="update-progress-bar-fill" id="updateProgressBarFill"></div>
+        </div>
+        <div class="update-progress-text">
+          <span id="updateProgressStatus">Downloading update...</span>
+          <span id="updateProgressPercent">0%</span>
+        </div>
+      </div>
+
+      <div class="update-actions" id="updateActions">
+        <button class="btn-cancel" id="btnUpdateLater" onclick="dismissUpdateModal()">Later</button>
+        <button class="btn-update-now" id="btnUpdateAction" onclick="startUpdateDownload()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          Update Now
+        </button>
+      </div>
     </div>
   </div>
 
@@ -610,6 +815,156 @@
       document.getElementById('logoUploadStatus').style.display = 'none';
       document.querySelector('.settings-modal').style.display = 'block';
       document.getElementById('qrModal').style.display = 'none';
+      const updateM = document.getElementById('updateModal');
+      if (updateM) updateM.style.display = 'none';
+    }
+
+    /* --- AUTO UPDATER LOGIC --- */
+    let latestUpdateInfo = null;
+    let isUpdateDownloading = false;
+
+    if (window.api && window.api.onUpdateAvailable) {
+      window.api.onUpdateAvailable((info) => {
+        handleUpdateFound(info, true);
+      });
+
+      window.api.onUpdateProgress((prog) => {
+        const fill = document.getElementById('updateProgressBarFill');
+        const percentText = document.getElementById('updateProgressPercent');
+        const statusText = document.getElementById('updateProgressStatus');
+        
+        if (fill) fill.style.width = (prog.percent || 0) + '%';
+        if (percentText) percentText.innerText = (prog.percent || 0) + '%';
+        if (statusText) {
+          if (prog.totalBytes > 0) {
+            const mbRecv = (prog.receivedBytes / (1024 * 1024)).toFixed(1);
+            const mbTotal = (prog.totalBytes / (1024 * 1024)).toFixed(1);
+            statusText.innerText = `Downloading update... (${mbRecv} / ${mbTotal} MB)`;
+          } else {
+            statusText.innerText = 'Downloading update...';
+          }
+        }
+      });
+
+      window.api.onUpdateDownloaded((data) => {
+        isUpdateDownloading = false;
+        const statusText = document.getElementById('updateProgressStatus');
+        const btnAction = document.getElementById('btnUpdateAction');
+        const btnLater = document.getElementById('btnUpdateLater');
+
+        if (statusText) statusText.innerText = 'Download complete! Ready to install.';
+        if (btnAction) {
+          btnAction.innerHTML = 'Restart & Install Now';
+          btnAction.onclick = installAndRestart;
+          btnAction.disabled = false;
+        }
+        if (btnLater) {
+          btnLater.style.display = 'inline-block';
+          btnLater.innerText = 'Install on Exit';
+        }
+
+        const badgeText = document.getElementById('updateBadgeText');
+        if (badgeText && latestUpdateInfo) {
+          badgeText.innerText = `Ready to Install (${latestUpdateInfo.tagName || 'v' + latestUpdateInfo.latestVersion})`;
+        }
+      });
+    }
+
+    function handleUpdateFound(info, autoOpen) {
+      latestUpdateInfo = info;
+      const badge = document.getElementById('updateBadge');
+      const badgeText = document.getElementById('updateBadgeText');
+      if (badgeText) badgeText.innerText = `Update ${info.tagName || 'Available'}`;
+      if (badge) badge.style.display = 'inline-flex';
+
+      const curPill = document.getElementById('currentVersionPill');
+      const newPill = document.getElementById('newVersionPill');
+      const notesBox = document.getElementById('updateNotesBox');
+
+      if (curPill) curPill.innerText = `Current: v${info.currentVersion}`;
+      if (newPill) newPill.innerText = `Latest: ${info.tagName || 'v' + info.latestVersion}`;
+      if (notesBox) notesBox.innerText = info.releaseNotes || 'New release with improvements and updates.';
+
+      if (autoOpen) {
+        openUpdateModal();
+      }
+    }
+
+    function openUpdateModal() {
+      if (!latestUpdateInfo) return;
+      document.getElementById('settingsOverlay').style.display = 'flex';
+      document.querySelector('.settings-modal').style.display = 'none';
+      document.getElementById('qrModal').style.display = 'none';
+      document.getElementById('updateModal').style.display = 'flex';
+    }
+
+    function dismissUpdateModal() {
+      document.getElementById('settingsOverlay').style.display = 'none';
+      document.getElementById('updateModal').style.display = 'none';
+      document.querySelector('.settings-modal').style.display = 'block';
+      // The pending notification badge in the header remains visible for the user to access anytime!
+    }
+
+    async function startUpdateDownload() {
+      if (!latestUpdateInfo || !latestUpdateInfo.asset) {
+        if (latestUpdateInfo && latestUpdateInfo.tagName) {
+          window.api.openUrl(`https://github.com/ransamie/Church-Intercom-System/releases/tag/${latestUpdateInfo.tagName}`);
+        }
+        dismissUpdateModal();
+        return;
+      }
+
+      isUpdateDownloading = true;
+      document.getElementById('updateProgressContainer').style.display = 'flex';
+      const btnAction = document.getElementById('btnUpdateAction');
+      if (btnAction) {
+        btnAction.disabled = true;
+        btnAction.innerHTML = 'Downloading...';
+      }
+      const btnLater = document.getElementById('btnUpdateLater');
+      if (btnLater) btnLater.style.display = 'none';
+
+      const res = await window.api.downloadUpdate(latestUpdateInfo.asset.downloadUrl, latestUpdateInfo.asset.name);
+      if (!res.success) {
+        alert('Download failed: ' + res.error);
+        isUpdateDownloading = false;
+        if (btnAction) {
+          btnAction.disabled = false;
+          btnAction.innerHTML = 'Retry Download';
+        }
+        if (btnLater) btnLater.style.display = 'inline-block';
+      }
+    }
+
+    async function installAndRestart() {
+      const res = await window.api.installUpdate();
+      if (!res.success) {
+        alert('Installation could not start: ' + res.error);
+      }
+    }
+
+    async function manualCheckForUpdates(e) {
+      const btn = e ? e.target : null;
+      const originalText = btn ? btn.innerText : '';
+      if (btn) {
+        btn.innerText = 'Checking...';
+        btn.disabled = true;
+      }
+      try {
+        const info = await window.api.checkForUpdates();
+        if (info.updateAvailable) {
+          handleUpdateFound(info, true);
+        } else {
+          alert(`You are up to date! (Current version: v${info.currentVersion})`);
+        }
+      } catch(err) {
+        alert('Could not check for updates: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.innerText = originalText;
+          btn.disabled = false;
+        }
+      }
     }
 
     function openQrModal() {
