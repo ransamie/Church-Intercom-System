@@ -411,29 +411,6 @@ function App() {
             <p className="build-description">The most recent stable build — recommended for all users.</p>
 
             <div className="platforms-grid">
-              {/* ANDROID */}
-              <a 
-                href={releases.length > 0 ? (releases[0].assets.find(a => a.name.endsWith('.apk'))?.browser_download_url || '#') : "https://github.com/ransamie/Church-Intercom-System/releases/latest"} 
-                className="platform-card"
-                download
-              >
-                <div className="platform-icon android">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.523 15.3414C17.523 16.0963 16.9113 16.708 16.1564 16.708C15.4015 16.708 14.7898 16.0963 14.7898 15.3414C14.7898 14.5866 15.4015 13.9749 16.1564 13.9749C16.9113 13.9749 17.523 14.5866 17.523 15.3414ZM7.84357 16.708C7.08868 16.708 6.47699 16.0963 6.47699 15.3414C6.47699 14.5866 7.08868 13.9749 7.84357 13.9749C8.59845 13.9749 9.21014 14.5866 9.21014 15.3414C9.21014 16.0963 8.59845 16.708 7.84357 16.708ZM17.9179 8.24355L19.9234 4.76746C20.0152 4.60835 19.9604 4.40498 19.8013 4.31317C19.6421 4.22137 19.4388 4.27613 19.3469 4.43524L17.3093 7.96924C15.7601 7.2605 13.9532 6.83785 12 6.83785C10.0468 6.83785 8.23984 7.2605 6.69074 7.96924L4.65306 4.43524C4.56125 4.27613 4.35787 4.22137 4.19875 4.31317C4.03964 4.40498 3.98487 4.60835 4.07667 4.76746L6.08216 8.24355C2.65651 10.1264 0.334641 13.6816 0 17.8427H24C23.6654 13.6816 21.3435 10.1264 17.9179 8.24355Z"/>
-                  </svg>
-                </div>
-                <div className="platform-info">
-                  <div className="platform-name">Android</div>
-                  <div className="platform-format">.apk Package</div>
-                  <div className="platform-size">{releases.length > 0 ? Math.round((releases[0].assets.find(a => a.name.endsWith('.apk'))?.size || 0) / 1024 / 1024) + ' MB' : '...'}</div>
-                </div>
-                <div className="download-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-                  </svg>
-                </div>
-              </a>
-
               {/* WINDOWS */}
               <a 
                 href={releases.length > 0 ? (releases[0].assets.find(a => a.name.endsWith('.exe'))?.browser_download_url || '#') : "https://github.com/ransamie/Church-Intercom-System/releases/latest"} 
@@ -528,7 +505,6 @@ function App() {
                   {expandedVersion === release.id && (
                     <div className="version-downloads">
                       {[
-                        { os: 'Android', ext: '.apk' },
                         { os: 'Windows', ext: '.exe' },
                         { os: 'macOS', ext: '.dmg' },
                         { os: 'Linux', ext: '.AppImage' }
