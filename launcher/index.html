@@ -668,7 +668,7 @@
             Web Interfaces (OTA Sync)
           </label>
           <button type="button" id="btnSyncOta" class="btn-cancel" style="font-size: 0.78rem; padding: 5px 12px; background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); color: #c4b5fd; cursor: pointer;" onclick="manualSyncWebClients(event)">
-            Sync Now 🔄
+            Sync Now
           </button>
         </div>
         <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;" id="otaStatusLabel">
@@ -741,7 +741,7 @@
 
   <!-- FLOATING TOAST NOTIFICATION -->
   <div id="toastNotification" style="position: fixed; bottom: 25px; right: 25px; background: #1a1c28; border: 1px solid rgba(139, 92, 246, 0.4); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 0.85rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: none; align-items: center; gap: 10px; z-index: 2000; transition: opacity 0.3s ease;">
-    <span style="font-size: 1.1rem;">⚡</span>
+    <svg style="width: 16px; height: 16px; color: #a78bfa; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
     <span id="toastMessage">Web interfaces updated over-the-air</span>
   </div>
 
@@ -1101,27 +1101,27 @@
         const res = await window.api.syncWebClients();
         if (res.success) {
           if (res.updatedCount > 0) {
-            statusLabel.innerHTML = `<span style="color:#10b981; font-weight:600;">✓ Synced!</span> Updated ${res.updatedCount} file(s). Connected devices will receive update on reload.`;
+            statusLabel.innerHTML = `<span style="color:#10b981; font-weight:600;">Updated:</span> ${res.updatedCount} file(s) updated. Connected devices will receive update on reload.`;
             showToast(`Web client interfaces updated (${res.updatedCount} file${res.updatedCount === 1 ? '' : 's'}).`);
           } else {
-            statusLabel.innerHTML = `<span style="color:#10b981; font-weight:600;">✓ Up to Date</span> • Web client interfaces already match GitHub master.`;
+            statusLabel.innerHTML = `<span style="color:#10b981; font-weight:600;">Up to Date:</span> Web client interfaces already match GitHub master.`;
           }
         } else {
-          statusLabel.innerHTML = `<span style="color:#ef4444;">⚠ Sync Failed:</span> ${res.error || 'Check internet connection.'}`;
+          statusLabel.innerHTML = `<span style="color:#ef4444; font-weight:600;">Sync Failed:</span> ${res.error || 'Check internet connection.'}`;
         }
       } catch (err) {
-        if (statusLabel) statusLabel.innerHTML = `<span style="color:#ef4444;">⚠ Sync Error:</span> ${err.message}`;
+        if (statusLabel) statusLabel.innerHTML = `<span style="color:#ef4444; font-weight:600;">Sync Error:</span> ${err.message}`;
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerText = 'Sync Now 🔄';
+          btn.innerText = 'Sync Now';
         }
       }
     }
 
     if (window.api && window.api.onOtaUpdateApplied) {
       window.api.onOtaUpdateApplied((data) => {
-        showToast(`⚡ Web client interfaces automatically updated over-the-air!`);
+        showToast('Web client interfaces automatically updated over-the-air.');
         refreshOtaStatusUI();
       });
     }
