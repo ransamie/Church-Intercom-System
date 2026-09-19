@@ -660,6 +660,22 @@
         </div>
       </div>
 
+      <!-- OVER-THE-AIR WEB CLIENT SYNC -->
+      <div class="form-group" style="margin-top: 20px; padding: 14px; background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label style="margin-bottom: 0; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.9rem;">
+            <svg style="width: 16px; height: 16px; color: #a78bfa;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M12 12v9m-4-4 4 4 4-4"/></svg>
+            Web Interfaces (OTA Sync)
+          </label>
+          <button type="button" id="btnSyncOta" class="btn-cancel" style="font-size: 0.78rem; padding: 5px 12px; background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); color: #c4b5fd; cursor: pointer;" onclick="manualSyncWebClients(event)">
+            Sync Now 🔄
+          </button>
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;" id="otaStatusLabel">
+          Downloads latest Walkie-Talkie & Conference web files directly from GitHub without reinstalling.
+        </div>
+      </div>
+
       <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center;">
         <span style="font-size: 0.85rem; color: var(--text-muted);" id="settingsVersionLabel">Church Intercom v1.0.12</span>
         <button type="button" class="btn-cancel" style="font-size: 0.8rem; padding: 6px 14px;" onclick="manualCheckForUpdates(event)">Check for Updates</button>
@@ -721,6 +737,12 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- FLOATING TOAST NOTIFICATION -->
+  <div id="toastNotification" style="position: fixed; bottom: 25px; right: 25px; background: #1a1c28; border: 1px solid rgba(139, 92, 246, 0.4); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 0.85rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: none; align-items: center; gap: 10px; z-index: 2000; transition: opacity 0.3s ease;">
+    <span style="font-size: 1.1rem;">⚡</span>
+    <span id="toastMessage">Web interfaces updated over-the-air</span>
   </div>
 
   <script>
@@ -808,6 +830,7 @@
     /* --- SETTINGS LOGIC --- */
     function openSettings() {
       document.getElementById('settingsOverlay').style.display = 'flex';
+      refreshOtaStatusUI();
     }
 
     function closeSettings() {
@@ -1029,6 +1052,78 @@
       } else {
         window.api.showMessage("Failed to save settings: " + res.error);
       }
+    }
+
+    /* --- OVER-THE-AIR (OTA) WEB CLIENT SYNC LOGIC --- */
+    function showToast(msg, duration = 4500) {
+      const toast = document.getElementById('toastNotification');
+      const text = document.getElementById('toastMessage');
+      if (!toast || !text) return;
+      text.innerText = msg;
+      toast.style.display = 'flex';
+      toast.style.opacity = '1';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => { toast.style.display = 'none'; }, 300);
+      }, duration);
+    }
+
+    async function refreshOtaStatusUI() {
+      const statusLabel = document.getElementById('otaStatusLabel');
+      if (!statusLabel || !window.api || !window.api.getOtaStatus) return;
+      try {
+        const ota = await window.api.getOtaStatus();
+        if (ota.hasOtaFiles && ota.lastSync) {
+          const syncDate = new Date(ota.lastSync);
+          const timeStr = syncDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const dateStr = syncDate.toLocaleDateString();
+          statusLabel.innerHTML = `<span style="color:#10b981; font-weight:600;">● Active</span> • Synced with GitHub (${dateStr} ${timeStr})`;
+        } else {
+          statusLabel.innerHTML = `Using bundled client interfaces. Click "Sync Now" to fetch latest from GitHub.`;
+        }
+      } catch (e) {
+        statusLabel.innerText = `Web client sync ready.`;
+      }
+    }
+
+    async function manualSyncWebClients(e) {
+      const btn = document.getElementById('btnSyncOta');
+      const statusLabel = document.getElementById('otaStatusLabel');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Syncing...';
+      }
+      if (statusLabel) {
+        statusLabel.innerText = 'Connecting to GitHub and downloading latest web interfaces...';
+      }
+
+      try {
+        const res = await window.api.syncWebClients();
+        if (res.success) {
+          if (res.updatedCount > 0) {
+            statusLabel.innerHTML = `<span style="color:#10b981; font-weight:600;">✓ Synced!</span> Updated ${res.updatedCount} file(s). Connected devices will receive update on reload.`;
+            showToast(`Web client interfaces updated (${res.updatedCount} file${res.updatedCount === 1 ? '' : 's'}).`);
+          } else {
+            statusLabel.innerHTML = `<span style="color:#10b981; font-weight:600;">✓ Up to Date</span> • Web client interfaces already match GitHub master.`;
+          }
+        } else {
+          statusLabel.innerHTML = `<span style="color:#ef4444;">⚠ Sync Failed:</span> ${res.error || 'Check internet connection.'}`;
+        }
+      } catch (err) {
+        if (statusLabel) statusLabel.innerHTML = `<span style="color:#ef4444;">⚠ Sync Error:</span> ${err.message}`;
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = 'Sync Now 🔄';
+        }
+      }
+    }
+
+    if (window.api && window.api.onOtaUpdateApplied) {
+      window.api.onOtaUpdateApplied((data) => {
+        showToast(`⚡ Web client interfaces automatically updated over-the-air!`);
+        refreshOtaStatusUI();
+      });
     }
   </script>
 </body>

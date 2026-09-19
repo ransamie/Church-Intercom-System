@@ -4,6 +4,7 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 const https = require('https');
+const crypto = require('crypto');
 const express = require('express');
 const { Server } = require('socket.io');
 const QRCode = require('qrcode');
@@ -48,17 +49,28 @@ async function getOrGenerateCertsAsync() {
       const pkey = await selfsigned.generate(attrs, { days: 3650 });
       fs.writeFileSync(keyPath, pkey.private);
       fs.writeFileSync(certPath, pkey.cert);
+      cachedCerts = { key: pkey.private, cert: pkey.cert };
+      return cachedCerts;
     } catch(err) {
-      console.error("Failed to generate certs:", err);
-      throw err;
+      console.error("Async cert generation error, falling back:", err);
+    }
+  } else {
+    try {
+      cachedCerts = {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath)
+      };
+      return cachedCerts;
+    } catch(err) {
+      console.error("Async cert read error:", err);
     }
   }
 
-  cachedCerts = {
-    key: fs.readFileSync(keyPath),
-    cert: fs.readFileSync(certPath)
+  // Fallback to bundled certs
+  return {
+    key: fs.readFileSync(path.join(__dirname, '..', 'Walkie-Talkie', 'key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, '..', 'Walkie-Talkie', 'cert.pem'))
   };
-  return cachedCerts;
 }
 function getLocalIps() {
   const interfaces = os.networkInterfaces();
@@ -75,6 +87,35 @@ function getLocalIps() {
     }
   }
   return results;
+}
+
+function getModeDir(mode) {
+  const modeFolder = mode === 'walkie' ? 'Walkie-Talkie' : 'Realtime-Conference';
+  const otaDir = path.join(app.getPath('userData'), 'ota-web-clients', modeFolder);
+  const localDir = path.join(__dirname, '..', modeFolder);
+  const resourceDir = path.join(process.resourcesPath || '', modeFolder);
+
+  // In development mode, prefer local repo files unless OTA files are strictly newer
+  if (!app.isPackaged && fs.existsSync(path.join(localDir, 'index.html'))) {
+    if (fs.existsSync(path.join(otaDir, 'index.html'))) {
+      const otaMtime = fs.statSync(path.join(otaDir, 'index.html')).mtimeMs;
+      const localMtime = fs.statSync(path.join(localDir, 'index.html')).mtimeMs;
+      if (otaMtime > localMtime) return otaDir;
+    }
+    return localDir;
+  }
+
+  // In packaged app, prioritize Over-The-Air updated files in userData
+  if (fs.existsSync(path.join(otaDir, 'index.html'))) {
+    return otaDir;
+  }
+
+  // Fallback to packaged extraResources path
+  if (fs.existsSync(path.join(resourceDir, 'index.html'))) {
+    return resourceDir;
+  }
+
+  return localDir;
 }
 
 function createWindow() {
@@ -99,7 +140,20 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-    // Check for updates shortly after launch
+
+    // 1. Check for Over-The-Air web interface updates in background
+    setTimeout(async () => {
+      try {
+        const otaResult = await syncOtaWebClients();
+        if (otaResult.updatedCount > 0 && mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('ota-update-applied', otaResult);
+        }
+      } catch (err) {
+        console.warn('[OTA] Background sync warning:', err.message);
+      }
+    }, 1500);
+
+    // 2. Check for software application updates shortly after launch
     setTimeout(async () => {
       try {
         const updateInfo = await checkForUpdates();
@@ -109,7 +163,7 @@ function createWindow() {
       } catch (err) {
         console.error('[Updater] Auto-check on launch failed:', err.message);
       }
-    }, 2000);
+    }, 3000);
   });
 
   ipcMain.handle('show-message', async (event, msg) => {
@@ -157,7 +211,8 @@ ipcMain.handle('start-server', async (event, mode) => {
     // Generate QR Code
     const qrCodeUrl = await QRCode.toDataURL(serverUrl, { margin: 1, width: 220 });
 
-    const appDir = path.join(__dirname, '..', mode === 'walkie' ? 'Walkie-Talkie' : 'Realtime-Conference');
+    const appDir = getModeDir(mode);
+    const fallbackDir = path.join(__dirname, '..', mode === 'walkie' ? 'Walkie-Talkie' : 'Realtime-Conference');
     
     // Persistent user settings
     const userDataPath = app.getPath('userData');
@@ -188,12 +243,22 @@ ipcMain.handle('start-server', async (event, mode) => {
     expressApp.get('/logo.jpg', (req, res) => {
       const customLogo = path.join(userDataPath, 'logo.jpg');
       if (fs.existsSync(customLogo)) {
-        res.sendFile(customLogo);
-      } else {
-        res.sendFile(path.join(appDir, 'logo.jpg'));
+        return res.sendFile(customLogo);
       }
+      const otaLogo = path.join(appDir, 'logo.jpg');
+      if (fs.existsSync(otaLogo)) {
+        return res.sendFile(otaLogo);
+      }
+      const fallbackLogo = path.join(fallbackDir, 'logo.jpg');
+      if (fs.existsSync(fallbackLogo)) {
+        return res.sendFile(fallbackLogo);
+      }
+      res.sendFile(path.join(__dirname, 'assets', 'logo.png'));
     });
     expressApp.use(express.static(appDir));
+    if (appDir !== fallbackDir && fs.existsSync(fallbackDir)) {
+      expressApp.use(express.static(fallbackDir));
+    }
     
     if (mode === 'walkie') {
       activeIo = new Server(activeServer, { maxHttpBufferSize: 1e8 });
@@ -613,5 +678,162 @@ ipcMain.handle('install-update', async () => {
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
+  }
+});
+
+// --- OVER-THE-AIR (OTA) WEB CLIENT SYNC ENGINE ---
+const OTA_REPO_RAW = 'https://raw.githubusercontent.com/ransamie/Church-Intercom-System/master';
+const OTA_TARGETS = [
+  { mode: 'walkie', folder: 'Walkie-Talkie', files: ['index.html', 'sw.js'] },
+  { mode: 'realtime', folder: 'Realtime-Conference', files: ['index.html', 'sw.js'] }
+];
+
+function fetchText(url) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      headers: {
+        'User-Agent': 'ChurchIntercom-OTA-Sync',
+        'Cache-Control': 'no-cache'
+      }
+    };
+    const req = https.get(url, options, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return fetchText(res.headers.location).then(resolve).catch(reject);
+      }
+      if (res.statusCode !== 200) {
+        res.resume();
+        return reject(new Error(`HTTP status ${res.statusCode}`));
+      }
+      let data = '';
+      res.setEncoding('utf8');
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => resolve(data));
+    });
+    req.setTimeout(10000, () => {
+      req.destroy(new Error('Connection timed out'));
+    });
+    req.on('error', reject);
+  });
+}
+
+async function syncOtaWebClients() {
+  const otaBaseDir = path.join(app.getPath('userData'), 'ota-web-clients');
+  const metaPath = path.join(otaBaseDir, 'ota-meta.json');
+  let currentMeta = { files: {}, lastSync: null };
+
+  if (fs.existsSync(metaPath)) {
+    try {
+      currentMeta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+      if (!currentMeta.files) currentMeta.files = {};
+    } catch (e) {
+      console.warn('[OTA] Could not read existing ota-meta.json:', e.message);
+    }
+  }
+
+  let updatedCount = 0;
+  const syncResults = [];
+
+  for (const target of OTA_TARGETS) {
+    const targetDir = path.join(otaBaseDir, target.folder);
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    for (const fileName of target.files) {
+      const fileKey = `${target.folder}/${fileName}`;
+      const destPath = path.join(targetDir, fileName);
+      const url = `${OTA_REPO_RAW}/${target.folder}/${fileName}?t=${Date.now()}`;
+
+      try {
+        const remoteContent = await fetchText(url);
+        if (!remoteContent || remoteContent.length < 20) {
+          throw new Error('Downloaded content is invalid or empty');
+        }
+        if (fileName === 'index.html' && !remoteContent.includes('<html') && !remoteContent.includes('<!DOCTYPE')) {
+          throw new Error('Downloaded index.html did not contain html tag');
+        }
+
+        const remoteHash = crypto.createHash('sha256').update(remoteContent).digest('hex');
+        let needsWrite = true;
+
+        if (fs.existsSync(destPath)) {
+          const localContent = fs.readFileSync(destPath, 'utf8');
+          const localHash = crypto.createHash('sha256').update(localContent).digest('hex');
+          if (localHash === remoteHash) {
+            needsWrite = false;
+          }
+        }
+
+        if (needsWrite) {
+          fs.writeFileSync(destPath, remoteContent, 'utf8');
+          updatedCount++;
+          syncResults.push({ file: fileKey, status: 'updated' });
+        } else {
+          syncResults.push({ file: fileKey, status: 'up-to-date' });
+        }
+
+        currentMeta.files[fileKey] = {
+          hash: remoteHash,
+          updatedAt: new Date().toISOString(),
+          bytes: Buffer.byteLength(remoteContent, 'utf8')
+        };
+      } catch (err) {
+        console.warn(`[OTA] Failed to fetch ${fileKey}:`, err.message);
+        syncResults.push({ file: fileKey, status: 'error', error: err.message });
+      }
+    }
+  }
+
+  currentMeta.lastSync = new Date().toISOString();
+  currentMeta.lastUpdatedCount = updatedCount;
+  try {
+    fs.writeFileSync(metaPath, JSON.stringify(currentMeta, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('[OTA] Failed to write ota-meta.json:', e.message);
+  }
+
+  return {
+    success: true,
+    updatedCount,
+    lastSync: currentMeta.lastSync,
+    results: syncResults
+  };
+}
+
+function getOtaStatus() {
+  const otaBaseDir = path.join(app.getPath('userData'), 'ota-web-clients');
+  const metaPath = path.join(otaBaseDir, 'ota-meta.json');
+  const walkieIndex = path.join(otaBaseDir, 'Walkie-Talkie', 'index.html');
+  const realtimeIndex = path.join(otaBaseDir, 'Realtime-Conference', 'index.html');
+
+  let meta = null;
+  if (fs.existsSync(metaPath)) {
+    try {
+      meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+    } catch (e) {}
+  }
+
+  const hasOtaFiles = fs.existsSync(walkieIndex) || fs.existsSync(realtimeIndex);
+
+  return {
+    hasOtaFiles,
+    lastSync: meta ? meta.lastSync : null,
+    meta: meta || null
+  };
+}
+
+ipcMain.handle('sync-web-clients', async () => {
+  try {
+    return await syncOtaWebClients();
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('get-ota-status', async () => {
+  try {
+    return getOtaStatus();
+  } catch (err) {
+    return { hasOtaFiles: false, error: err.message };
   }
 });

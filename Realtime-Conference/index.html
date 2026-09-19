@@ -418,20 +418,6 @@
         .footer a { color: #8e929c; text-decoration: none; font-weight: 600; }
         .footer a:hover { color: var(--primary-color); }
 
-        .install-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #d1d4db;
-            padding: 10px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-top: 15px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
 
         /* --- TOAST NOTIFICATIONS --- */
         .toast-container {
@@ -543,11 +529,6 @@
         
         <div class="footer">
             Developed by <a href="https://github.com/ransamie" target="_blank">Ransamie Technologies</a>
-            <br>
-            <button id="installBtn" class="install-btn" style="display:none;">
-                <svg class="icon-svg" viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                How to Install App
-            </button>
         </div>
     </div>
 
@@ -934,45 +915,6 @@
         // Service Worker / PWA
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});
-        }
-
-        const isNativeApp = navigator.userAgent.includes('ChurchIntercomApp');
-        
-        let deferredPrompt;
-        let pwaSupported = false;
-        
-        if (!isNativeApp) {
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                pwaSupported = true;
-                const installBtn = document.getElementById('installBtn');
-                if (installBtn) {
-                    installBtn.style.display = 'inline-flex';
-                    installBtn.onclick = () => {
-                        deferredPrompt.prompt();
-                        deferredPrompt.userChoice.then((choiceResult) => {
-                            if (choiceResult.outcome === 'accepted') {
-                                installBtn.style.display = 'none';
-                            }
-                            deferredPrompt = null;
-                        });
-                    };
-                }
-            });
-
-            setTimeout(() => {
-                if (!pwaSupported) {
-                    const installBtn = document.getElementById('installBtn');
-                    if (installBtn) {
-                        installBtn.style.display = 'inline-flex';
-                        installBtn.innerHTML = '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> How to Install App';
-                        installBtn.onclick = () => {
-                            showToast("<b>Manual Install Required:</b><br/>1. Tap the 3 dots (⋮) in the top right of Chrome.<br/>2. Select 'Add to Home screen'.", false, 10000);
-                        };
-                    }
-                }
-            }, 1500);
         }
     </script>
 </body>
