@@ -177,7 +177,7 @@ server.listen(3000, '0.0.0.0', () => {
   console.log('\nShare this link with the media team:');
   
   if (ips.length > 0) {
-      console.log(`\n👉  https://${ips[0]}:3000`);
+      console.log(`\n--> https://${ips[0]}:3000`);
       if (ips.length > 1) {
           console.log('\n(Or try these if the above fails):');
           ips.slice(1).forEach(ip => {

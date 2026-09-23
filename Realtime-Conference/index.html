@@ -136,8 +136,24 @@
         }
 
         .preset-btn .icon {
-            font-size: 1.5rem;
-            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .preset-btn .icon svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            display: block;
         }
 
         .preset-btn .label {
@@ -171,23 +187,36 @@
             margin-bottom: 15px;
         }
 
-        .input-icon {
+        .input-icon, .input-icon-right {
             position: absolute;
-            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 1.1rem;
-            opacity: 0.5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            color: #d1d4db;
+        }
+
+        .input-icon {
+            left: 18px;
         }
 
         .input-icon-right {
-            position: absolute;
             right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.1rem;
-            opacity: 0.5;
             cursor: pointer;
+            padding: 4px;
+        }
+
+        .input-icon svg, .input-icon-right svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            display: block;
         }
 
         input {
@@ -246,6 +275,15 @@
         }
 
         .station-badge { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.1rem; color: #fff; letter-spacing: 0.5px; }
+        .call-logo-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
         .mic-circle {
             width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;
         }
@@ -487,27 +525,39 @@
         
         <div class="preset-grid" id="presetGrid">
             <div class="preset-btn" onclick="setPreset('Cam1')">
-                <span class="icon">🎥</span>
+                <span class="icon">
+                    <svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                </span>
                 <span class="label">Cam1</span>
             </div>
             <div class="preset-btn" onclick="setPreset('Cam2')">
-                <span class="icon">🎥</span>
+                <span class="icon">
+                    <svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                </span>
                 <span class="label">Cam2</span>
             </div>
             <div class="preset-btn" onclick="setPreset('Sound')">
-                <span class="icon">🎧</span>
+                <span class="icon">
+                    <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+                </span>
                 <span class="label">Sound</span>
             </div>
             <div class="preset-btn" onclick="setPreset('Director')">
-                <span class="icon">🎬</span>
+                <span class="icon">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v4M12 4v4M17 4v4M2 8h20"/></svg>
+                </span>
                 <span class="label">Director</span>
             </div>
             <div class="preset-btn" onclick="setPreset('Visuals')">
-                <span class="icon">✨</span>
+                <span class="icon">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                </span>
                 <span class="label">Visuals</span>
             </div>
             <div class="preset-btn" onclick="setPreset('Usher')">
-                <span class="icon">🤝</span>
+                <span class="icon">
+                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </span>
                 <span class="label">Usher</span>
             </div>
         </div>
@@ -515,14 +565,20 @@
         <div class="custom-label">Or type custom</div>
         
         <div class="input-container">
-            <span class="input-icon">✏️</span>
+            <span class="input-icon">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
             <input type="text" id="stationInput" placeholder="e.g. Usher - Main Gate" oninput="clearPresetActive()" />
         </div>
         
         <div class="input-container">
-            <span class="input-icon">🔒</span>
+            <span class="input-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
             <input type="password" id="passwordInput" placeholder="Team password" />
-            <span class="input-icon-right" id="togglePassword" onclick="togglePasswordVisibility()">👁️</span>
+            <span class="input-icon-right" id="togglePassword" onclick="togglePasswordVisibility()" aria-label="Toggle password visibility">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </span>
         </div>
         
         <button class="unlock-btn" onclick="attemptLogin()">JOIN CONFERENCE &rarr;</button>
@@ -536,10 +592,11 @@
     <div id="conferenceScreen">
         <div class="status-header">
             <div class="station-badge">
-                <div class="mic-circle">
-                    <svg viewBox="0 0 24 24" class="icon-svg"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                <img src="/logo.jpg" alt="Logo" class="call-logo-img" />
+                <div style="text-align: left;">
+                    <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;" id="callAppTitle">Church Intercom</div>
+                    <span id="currentStationName">Cam 1</span>
                 </div>
-                <span id="currentStationName">Cam 1</span>
             </div>
             <div class="wake-badge">
                 <span class="dot"></span> Screen Active
@@ -670,15 +727,31 @@
             const icon = document.getElementById('togglePassword');
             if (input.type === 'password') {
                 input.type = 'text';
-                icon.innerText = '🔒';
+                icon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/></svg>';
             } else {
                 input.type = 'password';
-                icon.innerText = '👁️';
+                icon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
             }
         }
         
         // Initial setup for presets
         setTimeout(() => updatePresetActive(document.getElementById('stationInput').value), 100);
+
+        // Apply Theme & Church Title Config
+        fetch('/config')
+            .then(res => res.json())
+            .then(config => {
+                if (config.appName) {
+                    const appTitle = document.getElementById('appTitle');
+                    if (appTitle) appTitle.innerText = config.appName;
+                    const callTitle = document.getElementById('callAppTitle');
+                    if (callTitle) callTitle.innerText = config.appName;
+                }
+                if (config.theme) {
+                    if (config.theme.primaryColor) document.documentElement.style.setProperty('--primary-color', config.theme.primaryColor);
+                    if (config.theme.backgroundColor) document.documentElement.style.setProperty('--background-color', config.theme.backgroundColor);
+                }
+            }).catch(() => {});
 
         // Screen Wake Lock API
         async function requestWakeLock() {

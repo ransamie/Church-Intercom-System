@@ -141,13 +141,23 @@
             border: none;
             cursor: pointer;
             color: var(--text-muted);
-            font-size: 1.1rem;
             padding: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             touch-action: manipulation;
             user-select: none;
+        }
+
+        .password-toggle-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            display: block;
         }
 
         /* --- PRESET BUTTONS REDESIGNED --- */
@@ -181,9 +191,24 @@
         }
 
         .preset-btn .preset-icon {
-            font-size: 1.1rem;
-            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
             opacity: 0.85;
+            flex-shrink: 0;
+        }
+
+        .preset-btn .preset-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            display: block;
         }
 
         .preset-btn .preset-text {
@@ -261,9 +286,31 @@
         }
 
         .ssl-warning-box .ssl-icon {
-            font-size: 1rem;
             flex-shrink: 0;
             margin-top: 1px;
+            color: #d1d4db;
+        }
+
+        .ssl-warning-box .ssl-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            display: block;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-color);
+            display: inline-block;
+            margin-right: 6px;
+            vertical-align: middle;
+            box-shadow: 0 0 8px var(--success-color);
         }
 
         /* --- INTERCOM SCREEN --- */
@@ -295,7 +342,17 @@
             font-size: 1.1rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+        }
+
+        .call-logo-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
         }
 
         .wake-badge {
@@ -409,27 +466,39 @@
             </div>
             <div class="preset-grid" id="presetGrid">
                 <button type="button" class="preset-btn" onclick="setPreset('Cam 1', this)">
-                    <span class="preset-icon">🎥</span>
+                    <span class="preset-icon">
+                        <svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                    </span>
                     <span class="preset-text">Cam 1</span>
                 </button>
                 <button type="button" class="preset-btn" onclick="setPreset('Cam 2', this)">
-                    <span class="preset-icon">🎥</span>
+                    <span class="preset-icon">
+                        <svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                    </span>
                     <span class="preset-text">Cam 2</span>
                 </button>
                 <button type="button" class="preset-btn" onclick="setPreset('Sound Desk', this)">
-                    <span class="preset-icon">🎧</span>
+                    <span class="preset-icon">
+                        <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+                    </span>
                     <span class="preset-text">Sound</span>
                 </button>
                 <button type="button" class="preset-btn" onclick="setPreset('Director', this)">
-                    <span class="preset-icon">🎬</span>
+                    <span class="preset-icon">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v4M12 4v4M17 4v4M2 8h20"/></svg>
+                    </span>
                     <span class="preset-text">Director</span>
                 </button>
                 <button type="button" class="preset-btn" onclick="setPreset('Visuals', this)">
-                    <span class="preset-icon">✨</span>
+                    <span class="preset-icon">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                    </span>
                     <span class="preset-text">Visuals</span>
                 </button>
                 <button type="button" class="preset-btn" onclick="setPreset('Usher 1', this)">
-                    <span class="preset-icon">🤝</span>
+                    <span class="preset-icon">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </span>
                     <span class="preset-text">Usher</span>
                 </button>
             </div>
@@ -440,7 +509,9 @@
             <div class="input-wrapper">
                 <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" />
                 <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility()" aria-label="Toggle password visibility">
-                    <span id="eyeIcon">👁️</span>
+                    <span id="eyeIcon">
+                        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </span>
                 </button>
             </div>
         </div>
@@ -451,7 +522,9 @@
         </button>
 
         <div class="ssl-warning-box">
-            <span class="ssl-icon">🔒</span>
+            <span class="ssl-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
             <div><strong>Offline LAN Security:</strong> If your browser displays a "Not Private" notice, tap <em>Advanced &rarr; Proceed</em> to connect securely over local Wi-Fi.</div>
         </div>
 
@@ -464,8 +537,11 @@
     <div id="intercomScreen">
         <div class="status-card">
             <div class="station-tag">
-                <svg class="icon-svg" style="color:var(--primary-color)" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                <span id="currentStationName">Cam 1</span>
+                <img src="/logo.jpg" alt="Logo" class="call-logo-img" />
+                <div style="text-align: left;">
+                    <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;" id="callAppTitle">Church Intercom</div>
+                    <span id="currentStationName">Cam 1</span>
+                </div>
             </div>
             <div id="wakeStatus" class="wake-badge">
                 <svg class="icon-svg" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z"/></svg>
@@ -474,7 +550,7 @@
         </div>
 
         <div id="speakerBanner" class="speaker-banner">
-            🟢 Ready (Press & Hold Button Below)
+            <span class="live-dot"></span> Ready (Press &amp; Hold Button Below)
         </div>
 
         <div class="talk-button-wrapper">
@@ -536,10 +612,10 @@
             const eyeIcon = document.getElementById('eyeIcon');
             if (passInput.type === 'password') {
                 passInput.type = 'text';
-                eyeIcon.innerText = '🙈';
+                eyeIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/></svg>';
             } else {
                 passInput.type = 'password';
-                eyeIcon.innerText = '👁️';
+                eyeIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
             }
         }
 
@@ -555,7 +631,11 @@
         fetch('/config')
             .then(res => res.json())
             .then(config => {
-                if (config.appName) document.getElementById('appTitle').innerText = config.appName;
+                if (config.appName) {
+                    document.getElementById('appTitle').innerText = config.appName;
+                    const callTitle = document.getElementById('callAppTitle');
+                    if (callTitle) callTitle.innerText = config.appName;
+                }
                 if (config.theme) {
                     if (config.theme.primaryColor) document.documentElement.style.setProperty('--primary-color', config.theme.primaryColor);
                     if (config.theme.backgroundColor) document.documentElement.style.setProperty('--background-color', config.theme.backgroundColor);
@@ -596,13 +676,13 @@
         socket.on('speaker-active', (data) => {
             const banner = document.getElementById('speakerBanner');
             banner.className = 'speaker-banner transmitting';
-            banner.innerText = `📢 BROADCASTING: ${data.stationName}`;
+            banner.innerHTML = `BROADCASTING: ${data.stationName}`;
         });
 
         socket.on('speaker-idle', () => {
             const banner = document.getElementById('speakerBanner');
             banner.className = 'speaker-banner';
-            banner.innerText = '🟢 Channel Idle (Press & Hold Button)';
+            banner.innerHTML = '<span class="live-dot"></span> Channel Idle (Press &amp; Hold Button)';
         });
 
         // Microphone & Talk Button Handling
