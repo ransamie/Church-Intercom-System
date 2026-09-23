@@ -429,28 +429,62 @@ function App() {
             <p className="build-description">The most recent stable build — recommended for all users.</p>
 
             <div className="platforms-grid">
-              {/* WINDOWS */}
-              <a 
-                href={releases.length > 0 ? (releases[0].assets.find(a => a.name.endsWith('.exe'))?.browser_download_url || '#') : "https://github.com/ransamie/Church-Intercom-System/releases/latest"} 
-                className="platform-card"
-                download
-              >
-                <div className="platform-icon windows">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M0 3.449L9.75 2.1v9.451H0m0 1.35h9.75V22.4L0 20.951M11.1 1.912L24 0v11.451H11.1m0 1.35H24V24l-12.9-1.912"/>
-                  </svg>
-                </div>
-                <div className="platform-info">
-                  <div className="platform-name">Windows</div>
-                  <div className="platform-format">.exe Installer</div>
-                  <div className="platform-size">{releases.length > 0 ? Math.round((releases[0].assets.find(a => a.name.endsWith('.exe'))?.size || 0) / 1024 / 1024) + ' MB' : '...'}</div>
-                </div>
-                <div className="download-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-                  </svg>
-                </div>
-              </a>
+              {/* WINDOWS SETUP */}
+              {(() => {
+                const winSetupAsset = releases.length > 0 ? (releases[0].assets.find(a => a.name.includes('Setup') && a.name.endsWith('.exe')) || releases[0].assets.find(a => a.name.endsWith('.exe'))) : null;
+                return (
+                  <a 
+                    href={winSetupAsset?.browser_download_url || "https://github.com/ransamie/Church-Intercom-System/releases/latest"} 
+                    className="platform-card"
+                    download
+                  >
+                    <div className="platform-icon windows">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M0 3.449L9.75 2.1v9.451H0m0 1.35h9.75V22.4L0 20.951M11.1 1.912L24 0v11.451H11.1m0 1.35H24V24l-12.9-1.912"/>
+                      </svg>
+                    </div>
+                    <div className="platform-info">
+                      <div className="platform-name">Windows (Setup)</div>
+                      <div className="platform-format">.exe Installer Wizard</div>
+                      <div className="platform-size">{winSetupAsset ? Math.round(winSetupAsset.size / 1024 / 1024) + ' MB' : '...'}</div>
+                    </div>
+                    <div className="download-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                      </svg>
+                    </div>
+                  </a>
+                );
+              })()}
+
+              {/* WINDOWS PORTABLE */}
+              {(() => {
+                const winPortableAsset = releases.length > 0 ? releases[0].assets.find(a => !a.name.includes('Setup') && a.name.endsWith('.exe')) : null;
+                if (!winPortableAsset && releases.length > 0) return null;
+                return (
+                  <a 
+                    href={winPortableAsset?.browser_download_url || "https://github.com/ransamie/Church-Intercom-System/releases/latest"} 
+                    className="platform-card"
+                    download
+                  >
+                    <div className="platform-icon windows">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M0 3.449L9.75 2.1v9.451H0m0 1.35h9.75V22.4L0 20.951M11.1 1.912L24 0v11.451H11.1m0 1.35H24V24l-12.9-1.912"/>
+                      </svg>
+                    </div>
+                    <div className="platform-info">
+                      <div className="platform-name">Windows (Portable)</div>
+                      <div className="platform-format">.exe Standalone (No Install)</div>
+                      <div className="platform-size">{winPortableAsset ? Math.round(winPortableAsset.size / 1024 / 1024) + ' MB' : '...'}</div>
+                    </div>
+                    <div className="download-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                      </svg>
+                    </div>
+                  </a>
+                );
+              })()}
 
               {/* MACOS */}
               <a 
@@ -465,7 +499,7 @@ function App() {
                 </div>
                 <div className="platform-info">
                   <div className="platform-name">macOS</div>
-                  <div className="platform-format">.dmg (Apple Silicon/Intel)</div>
+                  <div className="platform-format">.dmg (Drag & Drop App)</div>
                   <div className="platform-size">{releases.length > 0 ? Math.round((releases[0].assets.find(a => a.name.endsWith('.dmg'))?.size || 0) / 1024 / 1024) + ' MB' : '...'}</div>
                 </div>
                 <div className="download-icon">
@@ -488,7 +522,7 @@ function App() {
                 </div>
                 <div className="platform-info">
                   <div className="platform-name">Linux</div>
-                  <div className="platform-format">.AppImage</div>
+                  <div className="platform-format">.AppImage (Portable)</div>
                   <div className="platform-size">{releases.length > 0 ? Math.round((releases[0].assets.find(a => a.name.endsWith('.AppImage'))?.size || 0) / 1024 / 1024) + ' MB' : '...'}</div>
                 </div>
                 <div className="download-icon">
@@ -572,11 +606,12 @@ function App() {
                       {expandedVersion === release.id && (
                         <div className="version-downloads">
                           {[
-                            { os: 'Windows', ext: '.exe' },
-                            { os: 'macOS', ext: '.dmg' },
-                            { os: 'Linux', ext: '.AppImage' }
+                            { os: 'Windows (Setup)', match: a => a.name.includes('Setup') && a.name.endsWith('.exe') },
+                            { os: 'Windows (Portable)', match: a => !a.name.includes('Setup') && a.name.endsWith('.exe') },
+                            { os: 'macOS', match: a => a.name.endsWith('.dmg') },
+                            { os: 'Linux', match: a => a.name.endsWith('.AppImage') }
                           ].map(platform => {
-                            const asset = release.assets.find(a => a.name.endsWith(platform.ext));
+                            const asset = release.assets.find(platform.match);
                             if (!asset) return null;
                             return (
                               <a key={platform.os} href={asset.browser_download_url} className="mini-download">

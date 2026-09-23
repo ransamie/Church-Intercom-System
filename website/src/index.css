@@ -1391,7 +1391,8 @@ section {
 .mini-os {
   font-weight: 600;
   font-size: 0.92rem;
-  width: 65px;
+  min-width: 65px;
+  width: auto;
 }
 
 .mini-size {
