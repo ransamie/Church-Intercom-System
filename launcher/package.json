@@ -1,6 +1,6 @@
 {
   "name": "church-intercom-launcher",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Church Intercom System — Desktop Launcher",
   "main": "main.js",
   "repository": {
@@ -31,14 +31,14 @@
         "nsis",
         "portable"
       ],
-      "icon": "assets/logo.png"
+      "icon": "assets/logo.png",
+      "requestedExecutionLevel": "asInvoker"
     },
     "nsis": {
       "oneClick": false,
       "perMachine": false,
       "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
-      "requestedExecutionLevel": "asInvoker",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Church Intercom",
