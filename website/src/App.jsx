@@ -5,6 +5,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('walkie');
   const [isTransmitting, setIsTransmitting] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [isDeafened, setIsDeafened] = useState(false);
+  const [simCallEnded, setSimCallEnded] = useState(false);
   const [customName, setCustomName] = useState("Refiner's House Revival Outreach");
   const [customLogo, setCustomLogo] = useState('/logo.jpg');
   const [themeColor, setThemeColor] = useState('#007bff');
@@ -147,110 +149,216 @@ function App() {
             </div>
 
             <div className="demo-screen">
-              {activeTab === 'walkie' ? (
-                <div className="walkie-demo">
-                  <p className="status-text">
-                    Status: <span className={isTransmitting ? 'text-danger' : 'text-success'} style={{ color: isTransmitting ? 'var(--danger)' : 'var(--success)'}}>
-                      {isTransmitting ? '● TRANSMITTING VOICE...' : '● Online & Ready (Hold to Speak)'}
-                    </span>
-                  </p>
-                  
-                  <button 
-                    className={`ptt-button ${isTransmitting ? 'transmitting' : ''}`}
-                    onMouseDown={() => setIsTransmitting(true)}
-                    onMouseUp={() => setIsTransmitting(false)}
-                    onTouchStart={() => setIsTransmitting(true)}
-                    onTouchEnd={() => setIsTransmitting(false)}
-                    onTouchCancel={() => setIsTransmitting(false)}
-                    onContextMenu={(e) => e.preventDefault()}
-                    aria-label="Push to talk button"
-                  >
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style={{ marginBottom: '4px', zIndex: 3 }}>
-                      <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                      <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-                    </svg>
-                    <span style={{zIndex: 3}}>{isTransmitting ? 'TRANSMITTING' : 'HOLD TO TALK'}</span>
-                    {isTransmitting && <div className="ptt-ring"></div>}
-                  </button>
+              <div className="sim-device-frame">
+                <div className="sim-phone-notch"></div>
+                {activeTab === 'walkie' ? (
+                  <div className="sim-walkie-body">
+                    <div className="sim-status-header">
+                      <div className="sim-station-badge">
+                        <img src={customLogo} alt="Logo" className="sim-call-logo-img" />
+                        <div>
+                          <div className="sim-app-title">Church Intercom</div>
+                          <span className="sim-station-name">Cam 1</span>
+                        </div>
+                      </div>
+                      <div className="sim-wake-badge">
+                        <span className="sim-dot"></span> Screen Active
+                      </div>
+                    </div>
 
-                  <p className="hint-text">Press & hold the big button to simulate transmitting</p>
-                </div>
-              ) : (
-                <div className="realtime-demo-container">
-                  <div className="rt-header">
-                    <div className="rt-header-left">
-                      <div className="rt-icon-circle">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#3b82f6"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg>
-                      </div>
-                      <span className="rt-title">Sound</span>
+                    <div className={`sim-speaker-banner ${isTransmitting ? 'transmitting' : ''}`}>
+                      {isTransmitting ? '📢 BROADCASTING: Cam 1' : '🟢 Ready (Press & Hold Button Below)'}
                     </div>
-                    <div className="rt-header-right">
-                      <div className="rt-status-pill">
-                        <span className="rt-dot"></span> Screen Active
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="rt-connected-text">CONNECTED (3)</div>
-
-                  <div className="rt-grid">
-                    <div className="rt-grid-item">
-                      <div className="rt-grid-circle filled active">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-                      </div>
-                      <div className="rt-grid-name" style={{color: '#10b981'}}>Camera 1</div>
-                    </div>
-                    <div className="rt-grid-item">
-                      <div className="rt-grid-circle filled">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM5 15h14l-4.5-6-3.5 4.5-2.5-3z"/></svg>
-                      </div>
-                      <div className="rt-grid-name">Visuals</div>
-                    </div>
-                    <div className="rt-grid-item">
-                      <div className="rt-grid-circle filled">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/></svg>
-                      </div>
-                      <div className="rt-grid-name">Producer</div>
-                    </div>
-                    <div className="rt-grid-circle"></div>
-                    <div className="rt-grid-circle"></div>
-                    <div className="rt-grid-circle"></div>
-                  </div>
-
-                  <div className="rt-user-section">
-                    <div className="rt-user-circle">
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                    </div>
-                    <div className="rt-user-name">Sound</div>
-                    <div className="rt-user-badge">YOU</div>
-                    
-                    <div className="rt-controls">
-                      <button className="rt-control-btn" type="button" aria-label="Toggle speaker audio">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#a1a1aa"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-                      </button>
-                      <button className="rt-control-btn" type="button" aria-label="Toggle camera view">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#a1a1aa"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                    <div className="sim-talk-button-wrapper">
+                      <button
+                        type="button"
+                        className={`sim-talk-button ${isTransmitting ? 'transmitting' : ''}`}
+                        onMouseDown={() => setIsTransmitting(true)}
+                        onMouseUp={() => setIsTransmitting(false)}
+                        onMouseLeave={() => setIsTransmitting(false)}
+                        onTouchStart={(e) => { e.preventDefault(); setIsTransmitting(true); }}
+                        onTouchEnd={(e) => { e.preventDefault(); setIsTransmitting(false); }}
+                        onTouchCancel={() => setIsTransmitting(false)}
+                        onContextMenu={(e) => e.preventDefault()}
+                        aria-label="Push to talk button"
+                      >
+                        <svg width="44" height="44" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                        </svg>
+                        <span>{isTransmitting ? 'TRANSMITTING' : 'HOLD TO TALK'}</span>
+                        {isTransmitting && <div className="sim-ptt-ring"></div>}
                       </button>
                     </div>
-                  </div>
 
-                  <button 
-                    type="button"
-                    className={`rt-main-btn ${isMuted ? 'muted' : 'live'}`}
-                    onClick={() => setIsMuted(!isMuted)}
-                    aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                      {isMuted ? (
-                        <path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.27-1.48.42-2.31.42-3.31 0-6-2.69-6-6H4c0 4.02 3.01 7.34 6.86 7.82V21h2.28v-3.18c.84-.11 1.64-.37 2.37-.75l3.22 3.22L20 19.01 4.27 3z"/>
-                      ) : (
-                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                      )}
-                    </svg>
-                    {isMuted ? 'MIC MUTED • Tap to talk' : 'MIC LIVE • Tap to mute'}
-                  </button>
-                </div>
-              )}
+                    <p className="sim-hint-text">Press & hold to simulate live voice broadcast</p>
+
+                    <div className="sim-footer">
+                      Built by <a href="https://github.com/ransamie" target="_blank" rel="noreferrer">RanTech</a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="sim-conference-body">
+                    <div className="sim-status-header">
+                      <div className="sim-station-badge">
+                        <img src={customLogo} alt="Logo" className="sim-call-logo-img" />
+                        <div>
+                          <div className="sim-app-title">Church Intercom</div>
+                          <span className="sim-station-name">Sound</span>
+                        </div>
+                      </div>
+                      <div className="sim-wake-badge">
+                        <span className="sim-dot"></span> Screen Active
+                      </div>
+                    </div>
+
+                    {simCallEnded ? (
+                      <div className="sim-call-ended-state">
+                        <div className="sim-ended-icon">📞</div>
+                        <div className="sim-ended-title">Call Disconnected</div>
+                        <p className="sim-ended-desc">You left the conference channel</p>
+                        <button
+                          type="button"
+                          className="sim-rejoin-btn"
+                          onClick={() => setSimCallEnded(false)}
+                        >
+                          Rejoin Conference
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="sim-roster-title">CONNECTED (3)</div>
+
+                        <div className="sim-peer-grid">
+                          {/* Peer 1: Camera 1 - Speaking */}
+                          <div className="sim-peer-slot speaking">
+                            <div className="sim-peer-avatar">
+                              <svg viewBox="0 0 24 24" className="sim-user-icon">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                              </svg>
+                              <div className="sim-speaking-dot"></div>
+                            </div>
+                            <div className="sim-peer-name" style={{ color: '#fff' }}>Camera 1</div>
+                          </div>
+
+                          {/* Peer 2: Visuals */}
+                          <div className="sim-peer-slot">
+                            <div className="sim-peer-avatar">
+                              <svg viewBox="0 0 24 24" className="sim-user-icon">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                              </svg>
+                            </div>
+                            <div className="sim-peer-name">Visuals</div>
+                          </div>
+
+                          {/* Peer 3: Director */}
+                          <div className="sim-peer-slot">
+                            <div className="sim-peer-avatar">
+                              <svg viewBox="0 0 24 24" className="sim-user-icon">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                              </svg>
+                            </div>
+                            <div className="sim-peer-name">Director</div>
+                          </div>
+
+                          {/* Empty Slots */}
+                          <div className="sim-peer-slot empty">
+                            <div className="sim-peer-avatar"></div>
+                            <div className="sim-peer-name">-</div>
+                          </div>
+                          <div className="sim-peer-slot empty">
+                            <div className="sim-peer-avatar"></div>
+                            <div className="sim-peer-name">-</div>
+                          </div>
+                          <div className="sim-peer-slot empty">
+                            <div className="sim-peer-avatar"></div>
+                            <div className="sim-peer-name">-</div>
+                          </div>
+                        </div>
+
+                        {/* YOU Section */}
+                        <div className="sim-you-section">
+                          <div className={`sim-you-avatar ${!isMuted ? 'live' : ''}`}>
+                            <svg viewBox="0 0 24 24" className="sim-user-icon">
+                              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            {isMuted ? (
+                              <div className="sim-you-avatar-slash"></div>
+                            ) : (
+                              <div className="sim-speaking-dot"></div>
+                            )}
+                          </div>
+                          <div className="sim-you-name">Sound</div>
+                          <div className="sim-you-badge">YOU</div>
+                        </div>
+
+                        {/* Bottom Controls */}
+                        <div className="sim-bottom-controls">
+                          <div className="sim-media-controls">
+                            <button
+                              type="button"
+                              className={`sim-media-btn ${isDeafened ? 'active-deafen' : ''}`}
+                              onClick={() => setIsDeafened(!isDeafened)}
+                              title={isDeafened ? "Speaker muted - click to enable" : "Mute incoming speaker audio"}
+                              aria-label="Toggle speaker deafen"
+                            >
+                              {isDeafened ? (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                                </svg>
+                              ) : (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                </svg>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              className="sim-media-btn end-call"
+                              onClick={() => setSimCallEnded(true)}
+                              title="Leave conference"
+                              aria-label="Leave conference"
+                            >
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/>
+                              </svg>
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            className={`sim-mute-control-btn ${isMuted ? 'muted' : 'talking'}`}
+                            onClick={() => setIsMuted(!isMuted)}
+                            aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+                          >
+                            {isMuted ? (
+                              <>
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.27-1.48.42-2.31.42-3.31 0-6-2.69-6-6H4c0 4.02 3.01 7.34 6.86 7.82V21h2.28v-3.18c.84-.11 1.64-.37 2.37-.75l3.22 3.22L20 19.01 4.27 3z"/>
+                                </svg>
+                                <span>MIC MUTED &bull; Tap to talk</span>
+                              </>
+                            ) : (
+                              <>
+                                <svg viewBox="0 0 24 24">
+                                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                                </svg>
+                                <span>MIC LIVE &bull; Tap to mute</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+
+                        <div className="sim-footer">
+                          Built by <a href="https://github.com/ransamie" target="_blank" rel="noreferrer">RanTech</a>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>
